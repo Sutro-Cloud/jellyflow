@@ -197,7 +197,8 @@ button.icon {
 }
 
 .coverflow-section {
-  --lyrics-rail: 300px;
+  --lyrics-rail: 400px;
+  --playlist-rail: 400px;
   position: relative;
   background: transparent;
   border-radius: 28px;
@@ -212,6 +213,7 @@ button.icon {
 }
 
 .lyrics-toggle,
+.playlist-toggle,
 .control-icon {
   width: 34px;
   height: 34px;
@@ -227,17 +229,46 @@ button.icon {
   flex-shrink: 0;
 }
 
+.lyrics-toggle,
+.playlist-toggle {
+  position: relative;
+}
+
 .lyrics-toggle:hover,
+.playlist-toggle:hover,
 .control-icon:hover {
   transform: translateY(-1px);
   color: var(--ink);
   border-color: var(--panel-border);
 }
 
-.coverflow-section.is-lyrics-open .lyrics-toggle {
-  color: var(--ink);
-  border-color: var(--accent);
-  background: var(--panel);
+body.is-lyrics-open .lyrics-toggle {
+  color: #fff;
+  border-color: var(--selection);
+  background: var(--selection);
+  box-shadow: 0 0 0 2px rgba(47, 109, 246, 0.35), 0 12px 24px rgba(47, 109, 246, 0.4);
+  transform: translateY(-1px) scale(1.05);
+}
+
+body.is-playlist-open .playlist-toggle {
+  color: #fff;
+  border-color: var(--selection);
+  background: var(--selection);
+  box-shadow: 0 0 0 2px rgba(47, 109, 246, 0.35), 0 12px 24px rgba(47, 109, 246, 0.4);
+  transform: translateY(-1px) scale(1.05);
+}
+
+body.is-lyrics-open .lyrics-toggle::after,
+body.is-playlist-open .playlist-toggle::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--mint);
+  border: 2px solid var(--panel);
 }
 
 .coverflow {
@@ -540,6 +571,130 @@ button.icon {
   opacity: 0.75;
 }
 
+.playlist-panel {
+  background: var(--panel-veil);
+  border-radius: 22px;
+  padding: 14px 18px 16px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
+  box-shadow: 0 16px 40px var(--shadow);
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: var(--playlist-rail);
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  min-width: 0;
+  opacity: 0;
+  transform: translateX(110%);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.35s ease, box-shadow 0.3s ease;
+  z-index: 3;
+}
+
+.coverflow-section.is-playlist-open .playlist-panel {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.playlist-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.playlist-header-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.playlist-title {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.playlist-status {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.playlist-body {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+}
+
+.playlist-list {
+  display: grid;
+  gap: 6px;
+  overflow-y: auto;
+  padding-right: 6px;
+  height: 100%;
+  min-height: 0;
+  align-content: start;
+}
+
+.playlist-panel .tracklist {
+  gap: 6px;
+  align-content: start;
+}
+
+.playlist-panel[data-view="list"] .playlist-tracklist {
+  display: none;
+}
+
+.playlist-panel[data-view="tracks"] .playlist-list {
+  display: none;
+}
+
+.playlist-tracklist {
+  max-height: none;
+  height: 100%;
+  min-height: 0;
+}
+
+.playlist-entry {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  height: 64px;
+  border-radius: 14px;
+  background: var(--panel-chip);
+  box-shadow: 0 10px 24px var(--shadow);
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: left;
+}
+
+.playlist-entry:hover {
+  border-color: var(--panel-border);
+}
+
+.playlist-entry.is-active {
+  border-color: var(--accent);
+  background: rgba(240, 93, 94, 0.08);
+}
+
+.playlist-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-count {
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 .album-meta {
   display: flex;
   align-items: center;
@@ -572,6 +727,22 @@ button.icon {
   max-height: 420px;
   overflow-y: auto;
   padding-right: 6px;
+}
+
+.playlist-panel .playlist-tracklist {
+  max-height: none;
+  height: 100%;
+}
+
+.playlist-panel .track {
+  height: 64px;
+}
+
+.playlist-panel .track-title,
+.playlist-panel .track-meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tracklist::-webkit-scrollbar {
@@ -658,6 +829,7 @@ button.icon {
 }
 
 .now-actions .lyrics-toggle,
+.now-actions .playlist-toggle,
 .now-actions .control-icon {
   box-shadow: none;
 }

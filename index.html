@@ -40,6 +40,21 @@
               </div>
             </div>
           </div>
+          <div class="playlist-panel" id="playlistPanel" data-view="list">
+            <div class="playlist-header">
+              <button class="icon playlist-back" id="playlistBack" type="button" aria-label="Back to playlists" hidden>&lt;</button>
+              <div class="playlist-header-text">
+                <div class="playlist-title" id="playlistTitle">Playlists</div>
+                <div class="playlist-status" id="playlistStatus">No playlists loaded</div>
+              </div>
+            </div>
+            <div class="playlist-body">
+              <div class="playlist-list" id="playlistList">
+                <div class="empty">No playlists loaded</div>
+              </div>
+              <div class="tracklist playlist-tracklist" id="playlistTracks"></div>
+            </div>
+          </div>
         </section>
       </main>
 
@@ -55,6 +70,7 @@
               <button class="control-icon" id="openSettings" type="button" aria-label="Connect" title="Connect">🔌</button>
               <button class="control-icon" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">☾</button>
               <button class="lyrics-toggle" id="lyricsPaneToggle" type="button" aria-label="Toggle lyrics panel" aria-expanded="false">♪</button>
+              <button class="playlist-toggle" id="playlistPaneToggle" type="button" aria-label="Toggle playlists panel" aria-expanded="false">&#9776;</button>
             </div>
           </div>
           <div class="footer-controls" id="cornerControls">
