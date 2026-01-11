@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Jellyflow - Jellyfin Music</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app">
+      <main class="main">
+        <section class="coverflow-section" id="coverflowSection">
+          <div class="coverflow">
+            <div class="coverflow-stage">
+              <div class="coverflow-track" id="coverflowTrack"></div>
+              <div class="coverflow-empty" id="coverflowEmpty" aria-live="polite">
+                <div class="coverflow-empty-icon" id="coverflowEmptyIcon">🔌</div>
+                <div class="coverflow-empty-title" id="coverflowEmptyTitle">Connect to Jellyfin</div>
+                <div class="coverflow-empty-sub" id="coverflowEmptySub">Use the connect button below to sign in.</div>
+              </div>
+            </div>
+          </div>
+          <div class="album-meta" id="albumMeta">
+            <div class="album-line" id="albumLine">Connect to Jellyfin</div>
+            <div class="album-count" id="albumCount">0 albums</div>
+          </div>
+          <div class="lyrics-panel" id="lyricsPanel">
+            <div class="lyrics-header">
+              <div class="lyrics-header-text">
+                <div class="lyrics-title">Lyrics</div>
+                <div class="lyrics-status" id="lyricsStatus">No track playing</div>
+              </div>
+            </div>
+            <div class="lyrics-viewport" id="lyricsViewport">
+              <div class="lyrics-track" id="lyricsTrack">
+                <div class="lyrics-line is-active">Start playing a track to see lyrics.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="player">
+        <div class="player-left">
+          <div class="now-playing">
+            <div class="now-cover" id="nowCover" role="button" tabindex="0" aria-label="Jump to now playing album"></div>
+            <div class="now-info">
+              <div class="now-title" id="nowTitle">Nothing playing</div>
+              <div class="now-sub" id="nowSub">Connect to start listening</div>
+            </div>
+            <div class="now-actions">
+              <button class="control-icon" id="openSettings" type="button" aria-label="Connect" title="Connect">🔌</button>
+              <button class="control-icon" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">☾</button>
+              <button class="lyrics-toggle" id="lyricsPaneToggle" type="button" aria-label="Toggle lyrics panel" aria-expanded="false">♪</button>
+            </div>
+          </div>
+          <div class="footer-controls" id="cornerControls">
+            <div class="status" id="status" data-tone="idle">Not connected</div>
+          </div>
+        </div>
+        <audio id="audio" controls preload="auto"></audio>
+      </footer>
+    </div>
+
+    <dialog id="settingsDialog">
+      <div class="dialog-header">
+        <div>
+          <div class="dialog-title">Connect to Jellyfin</div>
+          <div class="dialog-sub">Provide your server URL, API key, and user ID.</div>
+        </div>
+        <button class="icon" id="closeSettings" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <label class="field">
+          <span>Server URL</span>
+          <input id="serverUrlInput" type="url" placeholder="https://jellyfin.yourdomain.com" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Username</span>
+          <input id="usernameInput" type="text" placeholder="Jellyfin username" autocomplete="username">
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="passwordInput" type="password" placeholder="Jellyfin password" autocomplete="current-password">
+        </label>
+        <details class="advanced-auth">
+          <summary>Use API key instead</summary>
+          <div class="advanced-body">
+            <label class="field">
+              <span>API Key</span>
+              <input id="apiKeyInput" type="password" placeholder="Paste your Jellyfin API key" autocomplete="off">
+            </label>
+            <div class="field-row">
+              <button class="ghost" id="loadUsersBtn" type="button">Load Users</button>
+              <label class="field">
+                <span>User</span>
+                <select id="userSelect">
+                  <option value="">Select a user</option>
+                </select>
+              </label>
+            </div>
+            <label class="field">
+              <span>User ID</span>
+              <input id="userIdInput" type="text" placeholder="User ID" autocomplete="off">
+            </label>
+          </div>
+        </details>
+        <label class="toggle">
+          <input id="lyricsToggle" type="checkbox" checked>
+          <span>Fetch lyrics from LRCLIB (online)</span>
+        </label>
+        <label class="toggle">
+          <input id="rememberToggle" type="checkbox" checked>
+          <span>Remember connection on this device</span>
+        </label>
+      </div>
+      <div class="dialog-actions">
+        <button class="primary" id="connectBtn" type="button">Save & Connect</button>
+        <button class="ghost" id="resetBtn" type="button">Clear</button>
+      </div>
+    </dialog>
+
+    <div class="typeahead" id="typeahead" aria-hidden="true"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
