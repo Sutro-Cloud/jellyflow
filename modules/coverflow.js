@@ -1,0 +1,887 @@
+import { dom } from "./dom.js";
+import { state, ALBUM_PAGE_LIMIT, TYPEAHEAD_LOOKUP_DELAY } from "./state.js";
+import { fetchAlbumsPage, fetchJson, imageUrl } from "./api.js";
+import { albumArtist, albumSortKey, albumTitle, compareAlbumKeys } from "./music.js";
+import { formatRuntime, placeholderText } from "./utils.js";
+import { createTrackButton, setStatus } from "./ui.js";
+import { playTrack, updateNowPlayingIdle } from "./playback.js";
+import { resetLyricsPanel } from "./lyrics.js";
+
+function createCoverflowItem(album, index) {
+  const item = document.createElement("div");
+  item.className = "coverflow-item";
+  item.dataset.index = index.toString();
+  item.dataset.albumId = album.Id;
+  item.tabIndex = 0;
+  item.setAttribute("role", "button");
+
+  const card = document.createElement("div");
+  card.className = "coverflow-card";
+
+  const front = document.createElement("div");
+  front.className = "coverflow-face coverflow-front";
+
+  const media = document.createElement("div");
+  media.className = "coverflow-media";
+
+  const hasImage = album.ImageTags && album.ImageTags.Primary;
+  if (hasImage) {
+    const img = document.createElement("img");
+    img.src = imageUrl(album.Id, 600);
+    img.alt = albumTitle(album);
+    media.appendChild(img);
+  } else {
+    const placeholder = document.createElement("div");
+    placeholder.className = "placeholder";
+    placeholder.textContent = placeholderText(albumTitle(album));
+    media.appendChild(placeholder);
+  }
+  front.appendChild(media);
+
+  const back = document.createElement("div");
+  back.className = "coverflow-face coverflow-back";
+
+  const header = document.createElement("div");
+  header.className = "coverflow-back-header";
+
+  const titleWrap = document.createElement("div");
+  titleWrap.className = "coverflow-back-title";
+  const title = document.createElement("div");
+  title.className = "title";
+  title.textContent = albumTitle(album);
+  const subtitle = document.createElement("div");
+  subtitle.className = "subtitle";
+  subtitle.textContent = albumArtist(album);
+  titleWrap.appendChild(title);
+  titleWrap.appendChild(subtitle);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "icon coverflow-back-close";
+  closeBtn.textContent = "\u00d7";
+  closeBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closeOpenAlbum();
+  });
+
+  header.appendChild(titleWrap);
+  header.appendChild(closeBtn);
+
+  const body = document.createElement("div");
+  body.className = "coverflow-back-body";
+  const tracklist = document.createElement("div");
+  tracklist.className = "tracklist";
+  tracklist.innerHTML = '<div class="empty">Loading tracklist...</div>';
+  body.appendChild(tracklist);
+
+  back.appendChild(header);
+  back.appendChild(body);
+
+  card.appendChild(front);
+  card.appendChild(back);
+  item.appendChild(card);
+
+  item.addEventListener("click", (event) => {
+    if (event.target.closest(".coverflow-back")) {
+      return;
+    }
+    if (state.activeIndex !== index) {
+      setActiveIndex(index);
+      focusActiveCover();
+      return;
+    }
+    toggleOpenAlbum(album.Id);
+  });
+
+  item.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      if (event.target !== item && event.target.closest(".coverflow-back")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      handleCoverClick(index);
+    }
+  });
+
+  return item;
+}
+
+function renderCoverflow() {
+  dom.coverflowTrack.innerHTML = "";
+  state.albums.forEach((album, index) => {
+    dom.coverflowTrack.appendChild(createCoverflowItem(album, index));
+  });
+
+  updateCoverflow();
+}
+
+function appendCoverflowItems(albums, offset) {
+  albums.forEach((album, index) => {
+    dom.coverflowTrack.appendChild(createCoverflowItem(album, offset + index));
+  });
+  updateCoverflow();
+}
+
+function updateAlbumCount() {
+  if (state.windowed && state.albumTotal) {
+    if (!state.albums.length) {
+      dom.albumCount.textContent = `0 of ${state.albumTotal} albums`;
+      return;
+    }
+    const start = Math.min(state.albumTotal, state.windowStartIndex + 1);
+    const end = Math.min(state.albumTotal, state.windowStartIndex + state.albums.length);
+    dom.albumCount.textContent = `${start}-${end} of ${state.albumTotal} albums`;
+    return;
+  }
+  if (state.albumTotal && state.albums.length < state.albumTotal) {
+    dom.albumCount.textContent = `${state.albums.length} of ${state.albumTotal} albums`;
+    return;
+  }
+  dom.albumCount.textContent = `${state.albums.length} albums`;
+}
+
+function updateCoverflow() {
+  const items = Array.from(dom.coverflowTrack.children);
+  items.forEach((item, index) => {
+    const offset = index - state.activeIndex;
+    const absOffset = Math.abs(offset);
+    item.style.setProperty("--offset", offset.toString());
+    item.style.setProperty("--abs", absOffset.toString());
+    item.classList.toggle("is-active", index === state.activeIndex);
+    const albumId = item.dataset.albumId;
+    const isOpen = albumId && albumId === state.openAlbumId;
+    item.classList.toggle("is-open", isOpen);
+    item.classList.toggle("with-reflection", absOffset <= 3);
+    item.style.zIndex = isOpen ? "200" : (100 - Math.abs(offset)).toString();
+    item.style.opacity = Math.abs(offset) > 5 ? "0" : "1";
+  });
+
+  updateAlbumMeta();
+}
+
+export function focusActiveCover() {
+  const item = dom.coverflowTrack.children[state.activeIndex];
+  if (item && document.activeElement !== item) {
+    item.focus({ preventScroll: true });
+  }
+}
+
+function updateAlbumMeta() {
+  if (!state.albums.length) {
+    dom.albumLine.textContent = state.serverUrl ? "No albums found" : "Connect to Jellyfin";
+    updateAlbumCount();
+    updateCoverflowEmpty();
+    return;
+  }
+  const album = state.albums[state.activeIndex];
+  const artist = albumArtist(album);
+  const title = albumTitle(album);
+  const line = [artist, title].filter(Boolean).join(" / ");
+  dom.albumLine.textContent = line || "Unknown album";
+  updateAlbumCount();
+  updateCoverflowEmpty();
+}
+
+function updateCoverflowEmpty() {
+  if (!dom.coverflowEmpty) {
+    return;
+  }
+  const isConnected = Boolean(state.serverUrl && state.apiKey && state.userId);
+  const shouldShow = !state.albums.length && !state.isLoadingAlbums;
+  if (!shouldShow) {
+    dom.coverflowEmpty.classList.remove("is-visible");
+    return;
+  }
+  if (isConnected) {
+    dom.coverflowEmptyIcon.textContent = "\u266a";
+    dom.coverflowEmptyTitle.textContent = "No albums found";
+    dom.coverflowEmptySub.textContent = "Check your Jellyfin library settings.";
+  } else {
+    dom.coverflowEmptyIcon.textContent = "\ud83d\udd0c";
+    dom.coverflowEmptyTitle.textContent = "Connect to Jellyfin";
+    dom.coverflowEmptySub.textContent = "Use the connect button below to sign in.";
+  }
+  dom.coverflowEmpty.classList.add("is-visible");
+}
+
+export function setActiveIndex(index) {
+  if (!state.albums.length) {
+    return;
+  }
+  const clamped = Math.max(0, Math.min(state.albums.length - 1, index));
+  if (state.activeIndex !== clamped) {
+    state.openAlbumId = null;
+    state.trackFocusIndex = null;
+    state.trackFocusAlbumId = null;
+    state.jumpToken += 1;
+  }
+  state.activeIndex = clamped;
+  updateCoverflow();
+  ensureTracksForActive();
+}
+
+export function moveActiveIndex(direction) {
+  if (!state.albums.length) {
+    return;
+  }
+  if (!state.windowed) {
+    setActiveIndex(state.activeIndex + direction);
+    focusActiveCover();
+    return;
+  }
+  const nextIndex = state.activeIndex + direction;
+  if (nextIndex < 0) {
+    if (state.windowStartIndex > 0) {
+      void shiftAlbumWindow(-1);
+      return;
+    }
+    setActiveIndex(0);
+    focusActiveCover();
+    return;
+  }
+  if (nextIndex >= state.albums.length) {
+    const endIndex = state.windowStartIndex + state.albums.length;
+    if (state.albumTotal && endIndex < state.albumTotal) {
+      void shiftAlbumWindow(1);
+      return;
+    }
+    setActiveIndex(state.albums.length - 1);
+    focusActiveCover();
+    return;
+  }
+  setActiveIndex(nextIndex);
+  focusActiveCover();
+}
+
+async function shiftAlbumWindow(direction) {
+  if (state.isLoadingAlbums) {
+    return;
+  }
+  const total = state.albumTotal || 0;
+  if (!total) {
+    return;
+  }
+  const maxStart = Math.max(0, total - ALBUM_PAGE_LIMIT);
+  const start =
+    direction > 0
+      ? Math.min(maxStart, state.windowStartIndex + ALBUM_PAGE_LIMIT)
+      : Math.max(0, state.windowStartIndex - ALBUM_PAGE_LIMIT);
+  const focusIndex = direction > 0 ? 0 : ALBUM_PAGE_LIMIT - 1;
+  await loadAlbumWindow(start, focusIndex);
+  focusActiveCover();
+}
+
+async function loadAlbumWindow(startIndex, focusIndex = 0, guard = null) {
+  const token = ++state.loadToken;
+  state.isLoadingAlbums = true;
+  state.openAlbumId = null;
+  state.trackFocusIndex = null;
+  state.trackFocusAlbumId = null;
+  try {
+    const data = await fetchAlbumsPage(startIndex, ALBUM_PAGE_LIMIT);
+    if (token !== state.loadToken) {
+      return;
+    }
+    if (guard?.type === "typeahead" && guard.token !== state.typeaheadLookupToken) {
+      return;
+    }
+    if (guard?.type === "jump" && guard.token !== state.jumpToken) {
+      return;
+    }
+    const items = data.Items || [];
+    state.albums = items;
+    state.albumTotal = data.TotalRecordCount || state.albumTotal;
+    state.windowed = true;
+    state.windowStartIndex = startIndex;
+    state.activeIndex = Math.max(0, Math.min(items.length - 1, focusIndex));
+    renderCoverflow();
+  } catch (error) {
+    if (state.albums.length) {
+      setStatus(`Loaded ${state.albums.length} albums`, "ok");
+    } else {
+      setStatus("Albums failed to load", "warn");
+    }
+  } finally {
+    if (token === state.loadToken) {
+      state.isLoadingAlbums = false;
+    }
+  }
+}
+
+function maybeApplyTypeahead() {
+  if (!state.typeaheadQuery || state.openAlbumId) {
+    return;
+  }
+  const found = jumpToArtistPrefix(state.typeaheadQuery);
+  if (found) {
+    clearTypeaheadLookup();
+  } else if (shouldUseServerLookup()) {
+    scheduleTypeaheadLookup(state.typeaheadQuery);
+  }
+}
+
+async function ensureTracksForActive() {
+  const album = state.albums[state.activeIndex];
+  if (!album) {
+    return;
+  }
+  if (state.openAlbumId !== album.Id) {
+    return;
+  }
+  if (state.tracksByAlbum.has(album.Id)) {
+    renderTrackList(album, state.tracksByAlbum.get(album.Id));
+    return;
+  }
+
+  const tracklist = getTrackListContainer(album.Id);
+  if (tracklist) {
+    tracklist.innerHTML = '<div class="empty">Loading tracks...</div>';
+  }
+  try {
+    const data = await fetchJson(
+      `/Users/${state.userId}/Items?ParentId=${album.Id}&IncludeItemTypes=Audio&Recursive=true&SortBy=IndexNumber&Fields=RunTimeTicks,IndexNumber,Genres,Artists,AlbumArtist,Album`
+    );
+    const tracks = data.Items || [];
+    state.tracksByAlbum.set(album.Id, tracks);
+    renderTrackList(album, tracks);
+  } catch (error) {
+    if (tracklist) {
+      tracklist.innerHTML = '<div class="empty">Unable to load tracks</div>';
+    }
+  }
+}
+
+function renderTrackList(album, tracks) {
+  const tracklist = getTrackListContainer(album.Id);
+  if (!tracklist) {
+    return;
+  }
+  tracklist.innerHTML = "";
+  if (!tracks.length) {
+    tracklist.innerHTML = '<div class="empty">No tracks for this album</div>';
+    return;
+  }
+  tracks.forEach((track, index) => {
+    const durationText = formatRuntime(track.RunTimeTicks);
+    const button = createTrackButton({
+      number: (track.IndexNumber || index + 1).toString(),
+      title: track.Name || "Untitled",
+      meta: durationText,
+      duration: durationText,
+      dataset: { trackId: track.Id },
+      onClick: (event) => {
+        event.stopPropagation();
+        playTrack(album, track, index);
+      },
+      onFocus: () => {
+        state.trackFocusIndex = index;
+        state.trackFocusAlbumId = album.Id;
+      },
+    });
+    tracklist.appendChild(button);
+  });
+
+  syncTrackHighlights();
+}
+
+export function syncTrackHighlights() {
+  if (!state.openAlbumId) {
+    return;
+  }
+  const tracklist = getTrackListContainer(state.openAlbumId);
+  if (!tracklist) {
+    return;
+  }
+  const trackButtons = tracklist.querySelectorAll(".track");
+  trackButtons.forEach((button) => {
+    const isPlaying =
+      state.nowPlaying &&
+      button.dataset.trackId === state.nowPlaying.trackId;
+    button.classList.toggle("is-playing", Boolean(isPlaying));
+  });
+}
+
+export async function loadAlbumsPaginated() {
+  const token = ++state.loadToken;
+  state.isLoadingAlbums = true;
+  state.windowed = false;
+  state.windowStartIndex = 0;
+  resetLibraryState();
+  setStatus("Loading albums...", "info");
+
+  let startIndex = 0;
+  const limit = ALBUM_PAGE_LIMIT;
+  let total = null;
+  let hadError = false;
+
+  try {
+    while (true) {
+      if (total !== null && startIndex >= total) {
+        break;
+      }
+      const pageLimit = total ? Math.min(limit, total - startIndex) : limit;
+      let data;
+      try {
+        data = await fetchAlbumsPage(startIndex, pageLimit);
+      } catch (error) {
+        if (state.albums.length) {
+          hadError = true;
+          break;
+        }
+        throw error;
+      }
+
+      if (token !== state.loadToken) {
+        return;
+      }
+
+      const items = data.Items || [];
+      if (total === null) {
+        total = data.TotalRecordCount || items.length;
+        state.albumTotal = total;
+      }
+
+      if (!items.length) {
+        break;
+      }
+
+      const offset = state.albums.length;
+      state.albums.push(...items);
+
+      if (offset === 0) {
+        renderCoverflow();
+        ensureTracksForActive();
+      } else {
+        appendCoverflowItems(items, offset);
+      }
+      maybeApplyTypeahead();
+
+      updateAlbumCount();
+      if (state.albumTotal) {
+        setStatus(`Loading albums ${state.albums.length}/${state.albumTotal}`, "info");
+      }
+      startIndex += items.length;
+
+      if (items.length < pageLimit) {
+        break;
+      }
+    }
+
+    if (hadError) {
+      setStatus(`Loaded ${state.albums.length} albums`, "ok");
+    } else {
+      setStatus("Connected", "ok");
+    }
+    updateNowPlayingIdle();
+  } catch (error) {
+    if (!state.albums.length) {
+      setStatus("Albums failed to load", "warn");
+    }
+  } finally {
+    if (token === state.loadToken) {
+      state.isLoadingAlbums = false;
+    }
+  }
+}
+
+function resetLibraryState() {
+  state.albums = [];
+  state.activeIndex = 0;
+  state.albumTotal = 0;
+  state.windowed = false;
+  state.windowStartIndex = 0;
+  state.openAlbumId = null;
+  state.currentTrack = null;
+  state.currentAlbum = null;
+  state.tracksByAlbum.clear();
+  clearTypeahead();
+  renderCoverflow();
+  updateAlbumMeta();
+  resetLyricsPanel();
+}
+
+export function handleCoverClick(index) {
+  const album = state.albums[index];
+  if (!album) {
+    return;
+  }
+  if (state.activeIndex !== index) {
+    setActiveIndex(index);
+    focusActiveCover();
+    return;
+  }
+  toggleOpenAlbum(album.Id);
+}
+
+export function toggleOpenForActive() {
+  const album = state.albums[state.activeIndex];
+  if (!album) {
+    return;
+  }
+  toggleOpenAlbum(album.Id);
+}
+
+export function toggleOpenAlbum(albumId) {
+  if (state.openAlbumId === albumId) {
+    closeOpenAlbum();
+    return;
+  }
+  state.openAlbumId = albumId;
+  state.trackFocusIndex = null;
+  state.trackFocusAlbumId = albumId;
+  clearTypeahead();
+  updateCoverflow();
+  ensureTracksForActive();
+}
+
+export function closeOpenAlbum() {
+  state.openAlbumId = null;
+  state.trackFocusIndex = null;
+  state.trackFocusAlbumId = null;
+  clearTypeahead();
+  updateCoverflow();
+}
+
+function getTrackListContainer(albumId) {
+  if (!albumId) {
+    return null;
+  }
+  const item = dom.coverflowTrack.querySelector(`[data-album-id="${albumId}"]`);
+  if (!item) {
+    return null;
+  }
+  return item.querySelector(".tracklist");
+}
+
+export function getOpenTrackButtons() {
+  if (!state.openAlbumId) {
+    return [];
+  }
+  const tracklist = getTrackListContainer(state.openAlbumId);
+  if (!tracklist) {
+    return [];
+  }
+  return Array.from(tracklist.querySelectorAll(".track"));
+}
+
+function focusTrackButton(button) {
+  if (!button) {
+    return;
+  }
+  button.focus({ preventScroll: true });
+  button.scrollIntoView({ block: "nearest" });
+}
+
+export function focusTrackByDelta(delta) {
+  const buttons = getOpenTrackButtons();
+  if (!buttons.length) {
+    return false;
+  }
+  const active = document.activeElement;
+  let index = buttons.findIndex((button) => button === active);
+  if (index === -1) {
+    if (state.nowPlaying && state.nowPlaying.albumId === state.openAlbumId) {
+      index = buttons.findIndex((button) => button.dataset.trackId === state.nowPlaying.trackId);
+    }
+    if (index === -1) {
+      index = delta > 0 ? 0 : buttons.length - 1;
+    }
+  } else {
+    index = Math.max(0, Math.min(buttons.length - 1, index + delta));
+  }
+  focusTrackButton(buttons[index]);
+  state.trackFocusIndex = index;
+  state.trackFocusAlbumId = state.openAlbumId;
+  return true;
+}
+
+export function clearTypeahead() {
+  if (state.typeaheadTimer) {
+    clearTimeout(state.typeaheadTimer);
+  }
+  state.typeaheadTimer = null;
+  state.typeaheadQuery = "";
+  clearTypeaheadLookup();
+  if (dom.typeahead) {
+    dom.typeahead.textContent = "";
+    dom.typeahead.classList.remove("is-active");
+  }
+}
+
+export function clearTypeaheadLookup() {
+  if (state.typeaheadLookupTimer) {
+    clearTimeout(state.typeaheadLookupTimer);
+  }
+  state.typeaheadLookupTimer = null;
+  state.typeaheadLookupQuery = "";
+  state.typeaheadLookupToken += 1;
+}
+
+export function scheduleTypeaheadClear() {
+  if (state.typeaheadTimer) {
+    clearTimeout(state.typeaheadTimer);
+  }
+  state.typeaheadTimer = window.setTimeout(() => {
+    clearTypeahead();
+  }, 3000);
+}
+
+export function showTypeahead() {
+  if (!dom.typeahead) {
+    return;
+  }
+  dom.typeahead.textContent = state.typeaheadQuery.toUpperCase();
+  if (state.typeaheadQuery) {
+    dom.typeahead.classList.add("is-active");
+  } else {
+    dom.typeahead.classList.remove("is-active");
+  }
+}
+
+export function jumpToArtistPrefix(query) {
+  const lookup = normalizeTypeaheadQuery(query);
+  if (!lookup) {
+    return false;
+  }
+  const index = findArtistPrefixIndex(lookup);
+  if (index === -1) {
+    return false;
+  }
+  setActiveIndex(index);
+  focusActiveCover();
+  return true;
+}
+
+export function normalizeTypeaheadQuery(query) {
+  return query.replace(/\s+/g, " ").trimStart();
+}
+
+function findArtistPrefixIndex(query) {
+  const lookup = query.toLowerCase();
+  let low = 0;
+  let high = state.albums.length;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    const artist = albumArtist(state.albums[mid]).toLowerCase();
+    if (artist < lookup) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+  if (low < state.albums.length) {
+    const artist = albumArtist(state.albums[low]).toLowerCase();
+    if (artist.startsWith(lookup)) {
+      return low;
+    }
+  }
+  return -1;
+}
+
+export function shouldUseServerLookup() {
+  if (state.windowed) {
+    return true;
+  }
+  if (!state.albumTotal) {
+    return true;
+  }
+  return state.albums.length < state.albumTotal;
+}
+
+export function scheduleTypeaheadLookup(query) {
+  if (!state.serverUrl || !state.apiKey || !state.userId) {
+    return;
+  }
+  clearTypeaheadLookup();
+  state.typeaheadLookupQuery = query;
+  const token = ++state.typeaheadLookupToken;
+  state.typeaheadLookupTimer = window.setTimeout(() => {
+    void runTypeaheadLookup(query, token);
+  }, TYPEAHEAD_LOOKUP_DELAY);
+}
+
+async function runTypeaheadLookup(query, token) {
+  const lookup = normalizeTypeaheadQuery(query);
+  if (!lookup) {
+    return;
+  }
+  const index = await findArtistIndexOnServer(lookup, token);
+  if (token !== state.typeaheadLookupToken) {
+    return;
+  }
+  if (index === -1) {
+    return;
+  }
+  const maxStart = Math.max(0, (state.albumTotal || 0) - ALBUM_PAGE_LIMIT);
+  const startIndex = Math.max(
+    0,
+    Math.min(maxStart, index - Math.floor(ALBUM_PAGE_LIMIT / 2))
+  );
+  const focusIndex = index - startIndex;
+  await loadAlbumWindow(startIndex, focusIndex, { type: "typeahead", token });
+  if (token === state.typeaheadLookupToken) {
+    focusActiveCover();
+  }
+}
+
+async function fetchAlbumAtIndex(index) {
+  if (index < 0) {
+    return null;
+  }
+  if (state.windowed) {
+    const localIndex = index - state.windowStartIndex;
+    if (localIndex >= 0 && localIndex < state.albums.length) {
+      return state.albums[localIndex];
+    }
+  } else if (index >= 0 && index < state.albums.length) {
+    return state.albums[index];
+  }
+  const data = await fetchAlbumsPage(index, 1);
+  return data.Items?.[0] || null;
+}
+
+async function findArtistIndexOnServer(query, token) {
+  let total = state.albumTotal;
+  if (!total) {
+    const data = await fetchAlbumsPage(0, 1);
+    if (token !== state.typeaheadLookupToken) {
+      return -1;
+    }
+    total = data.TotalRecordCount || 0;
+    state.albumTotal = total;
+  }
+  if (!total) {
+    return -1;
+  }
+  const lookup = query.toLowerCase();
+  let low = 0;
+  let high = total - 1;
+  let candidate = -1;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const album = await fetchAlbumAtIndex(mid);
+    if (token !== state.typeaheadLookupToken) {
+      return -1;
+    }
+    const artist = album ? albumArtist(album).toLowerCase() : "";
+    if (artist < lookup) {
+      low = mid + 1;
+    } else {
+      candidate = mid;
+      high = mid - 1;
+    }
+  }
+  if (candidate === -1) {
+    return -1;
+  }
+  const album = await fetchAlbumAtIndex(candidate);
+  if (token !== state.typeaheadLookupToken) {
+    return -1;
+  }
+  if (album && albumArtist(album).toLowerCase().startsWith(lookup)) {
+    return candidate;
+  }
+  return -1;
+}
+
+async function findAlbumIndexByKeyOnServer(targetKey, token) {
+  let total = state.albumTotal;
+  if (!total) {
+    const data = await fetchAlbumsPage(0, 1);
+    if (token !== state.jumpToken) {
+      return -1;
+    }
+    total = data.TotalRecordCount || 0;
+    state.albumTotal = total;
+  }
+  if (!total) {
+    return -1;
+  }
+  let low = 0;
+  let high = total - 1;
+  let candidate = -1;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const album = await fetchAlbumAtIndex(mid);
+    if (token !== state.jumpToken) {
+      return -1;
+    }
+    const albumKey = albumSortKey(album);
+    const comparison = compareAlbumKeys(albumKey, targetKey);
+    if (comparison < 0) {
+      low = mid + 1;
+    } else {
+      candidate = mid;
+      high = mid - 1;
+    }
+  }
+  return candidate;
+}
+
+async function loadAlbumWindowAndFocusById(startIndex, albumId, token) {
+  await loadAlbumWindow(startIndex, 0, { type: "jump", token });
+  if (token !== state.jumpToken) {
+    return false;
+  }
+  const localIndex = state.albums.findIndex((album) => album.Id === albumId);
+  if (localIndex === -1) {
+    return false;
+  }
+  setActiveIndex(localIndex);
+  focusActiveCover();
+  return true;
+}
+
+export async function jumpToAlbumById(albumId) {
+  if (!albumId || !state.serverUrl || !state.apiKey || !state.userId) {
+    return;
+  }
+  if (state.openAlbumId) {
+    closeOpenAlbum();
+  }
+  clearTypeahead();
+  const localIndex = state.albums.findIndex((album) => album.Id === albumId);
+  if (localIndex !== -1) {
+    setActiveIndex(localIndex);
+    focusActiveCover();
+    return;
+  }
+  const token = ++state.jumpToken;
+  try {
+    const album = await fetchJson(`/Items/${albumId}`);
+    if (token !== state.jumpToken) {
+      return;
+    }
+    const targetKey = albumSortKey(album);
+    const baseIndex = await findAlbumIndexByKeyOnServer(targetKey, token);
+    if (token !== state.jumpToken || baseIndex === -1) {
+      return;
+    }
+    const total = state.albumTotal || 0;
+    const maxStart = Math.max(0, total - ALBUM_PAGE_LIMIT);
+    const half = Math.floor(ALBUM_PAGE_LIMIT / 2);
+    const centeredStart = Math.max(0, Math.min(maxStart, baseIndex - half));
+    const foundCentered = await loadAlbumWindowAndFocusById(centeredStart, albumId, token);
+    if (token !== state.jumpToken || foundCentered) {
+      return;
+    }
+    const startAtBase = Math.max(0, Math.min(maxStart, baseIndex));
+    const foundAtBase = await loadAlbumWindowAndFocusById(startAtBase, albumId, token);
+    if (token !== state.jumpToken) {
+      return;
+    }
+    if (!foundAtBase && state.albums.length) {
+      const fallbackIndex = Math.max(
+        0,
+        Math.min(state.albums.length - 1, baseIndex - state.windowStartIndex)
+      );
+      setActiveIndex(fallbackIndex);
+      focusActiveCover();
+    }
+  } catch (error) {
+    if (token === state.jumpToken) {
+      setStatus("Could not jump to album", "warn");
+    }
+  }
+}

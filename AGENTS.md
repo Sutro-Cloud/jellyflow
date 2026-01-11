@@ -4,7 +4,8 @@
 This is a small static web app with a thin Node server. Key files:
 - `index.html` holds the app markup and UI skeleton.
 - `styles.css` contains the global theme, layout, and animations.
-- `app.js` implements the client-side state, Jellyfin API calls, and UI behavior.
+- `app.js` is the module entry point that wires UI events.
+- `modules/` contains feature-focused ES modules (coverflow, lyrics, playlists, playback).
 - `server.js` is an Express server that serves static assets and the SPA fallback.
 - `package.json` defines the Node runtime and dependencies.
 

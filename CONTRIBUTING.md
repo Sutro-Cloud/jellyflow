@@ -11,7 +11,8 @@ Express server, so changes are usually focused on `index.html`, `styles.css`, an
 ## Project Structure
 - `index.html`: main markup and UI skeleton.
 - `styles.css`: global theme, layout, and animations.
-- `app.js`: client-side state, Jellyfin API calls, and UI behavior.
+- `app.js`: module entry point and event wiring.
+- `modules/`: feature modules for API, coverflow, lyrics, playlists, and playback.
 - `server.js`: Express static server and SPA fallback.
 
 ## Coding Style
