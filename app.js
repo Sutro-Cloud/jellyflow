@@ -1237,44 +1237,66 @@ function renderTrackList(album, tracks) {
     return;
   }
   tracks.forEach((track, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "track";
-    button.dataset.trackId = track.Id;
-
-    const number = document.createElement("span");
-    number.textContent = (track.IndexNumber || index + 1).toString();
-
-    const title = document.createElement("div");
-    const titleText = document.createElement("div");
-    titleText.className = "track-title";
-    titleText.textContent = track.Name || "Untitled";
-    const metaText = document.createElement("div");
-    metaText.className = "track-meta";
-    metaText.textContent = formatRuntime(track.RunTimeTicks);
-    title.appendChild(titleText);
-    title.appendChild(metaText);
-
-    const duration = document.createElement("span");
-    duration.textContent = formatRuntime(track.RunTimeTicks);
-
-    button.appendChild(number);
-    button.appendChild(title);
-    button.appendChild(duration);
-
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      playTrack(album, track, index);
+    const durationText = formatRuntime(track.RunTimeTicks);
+    const button = createTrackButton({
+      number: (track.IndexNumber || index + 1).toString(),
+      title: track.Name || "Untitled",
+      meta: durationText,
+      duration: durationText,
+      dataset: { trackId: track.Id },
+      onClick: (event) => {
+        event.stopPropagation();
+        playTrack(album, track, index);
+      },
+      onFocus: () => {
+        state.trackFocusIndex = index;
+        state.trackFocusAlbumId = album.Id;
+      },
     });
-    button.addEventListener("focus", () => {
-      state.trackFocusIndex = index;
-      state.trackFocusAlbumId = album.Id;
-    });
-
     tracklist.appendChild(button);
   });
 
   syncTrackHighlights();
+}
+
+function createTrackButton({ number, title, meta, duration, dataset, onClick, onFocus }) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "track";
+  if (dataset) {
+    Object.entries(dataset).forEach(([key, value]) => {
+      button.dataset[key] = value;
+    });
+  }
+
+  const numberEl = document.createElement("span");
+  numberEl.textContent = number;
+
+  const titleWrap = document.createElement("div");
+  const titleText = document.createElement("div");
+  titleText.className = "track-title";
+  titleText.textContent = title;
+  const metaText = document.createElement("div");
+  metaText.className = "track-meta";
+  metaText.textContent = meta;
+  titleWrap.appendChild(titleText);
+  titleWrap.appendChild(metaText);
+
+  const durationEl = document.createElement("span");
+  durationEl.textContent = duration;
+
+  button.appendChild(numberEl);
+  button.appendChild(titleWrap);
+  button.appendChild(durationEl);
+
+  if (onClick) {
+    button.addEventListener("click", onClick);
+  }
+  if (onFocus) {
+    button.addEventListener("focus", onFocus);
+  }
+
+  return button;
 }
 
 function updatePlaylistStatus(text) {
@@ -1366,41 +1388,22 @@ function renderPlaylistTracks(playlistId) {
     return;
   }
   tracks.forEach((track, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "track";
-    button.dataset.trackId = track.Id;
-    button.dataset.playlistId = playlistId;
-
-    const number = document.createElement("span");
-    number.textContent = (index + 1).toString().padStart(2, "0");
-
-    const title = document.createElement("div");
-    const titleText = document.createElement("div");
-    titleText.className = "track-title";
-    titleText.textContent = track.Name || "Untitled";
-    const metaText = document.createElement("div");
-    metaText.className = "track-meta";
+    const titleText = track.Name || "Untitled";
     const albumName = track.Album || "Unknown album";
     const artists = Array.isArray(track.Artists) && track.Artists.length
       ? track.Artists.join(", ")
       : track.AlbumArtist || "Unknown artist";
-    metaText.textContent = `${albumName} · ${artists}`;
-    title.appendChild(titleText);
-    title.appendChild(metaText);
-
-    const duration = document.createElement("span");
-    duration.textContent = formatRuntime(track.RunTimeTicks);
-
-    button.appendChild(number);
-    button.appendChild(title);
-    button.appendChild(duration);
-
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      void playPlaylistTrack(playlistId, track, index);
+    const button = createTrackButton({
+      number: (index + 1).toString().padStart(2, "0"),
+      title: titleText,
+      meta: `${albumName} · ${artists}`,
+      duration: formatRuntime(track.RunTimeTicks),
+      dataset: { trackId: track.Id, playlistId },
+      onClick: (event) => {
+        event.stopPropagation();
+        void playPlaylistTrack(playlistId, track, index);
+      },
     });
-
     dom.playlistTracks.appendChild(button);
   });
   syncPlaylistHighlights();

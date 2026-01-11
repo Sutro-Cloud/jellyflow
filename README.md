@@ -45,3 +45,7 @@ You can also run a simple static server with Python:
 ```bash
 python3 -m http.server 3000
 ```
+
+## Contributing
+
+See `CONTRIBUTING.md` and `AGENTS.md` for setup, style, and PR expectations.
