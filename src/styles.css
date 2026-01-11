@@ -486,23 +486,15 @@ body.is-playlist-open .playlist-toggle::after {
 }
 
 @supports (-webkit-touch-callout: none) {
-  .coverflow-track {
-    transform-style: flat;
-    -webkit-transform-style: flat;
-  }
-
   .coverflow-item {
     --cover-size: 340px;
     --cover-spacing: 220px;
     --cover-depth: -130px;
     --cover-tilt: -20deg;
-    transform-style: flat;
-    -webkit-transform-style: flat;
   }
 
   .coverflow-card {
     box-shadow: none;
-    transform: none;
   }
 
   .coverflow-item.is-active .coverflow-card {
@@ -510,7 +502,7 @@ body.is-playlist-open .playlist-toggle::after {
   }
 
   .coverflow-item.is-open .coverflow-card {
-    transform: rotateY(180deg);
+    transform: translateZ(0) rotateY(180deg);
   }
 
 

@@ -181,10 +181,13 @@ function setupEvents() {
     startX: 0,
     startY: 0,
     stepCount: 0,
+    startTime: 0,
+    lastX: 0,
+    lastTime: 0,
   };
-  const SWIPE_LOCK_THRESHOLD = 8;
-  const SWIPE_STEP = 70;
-  const SWIPE_END_THRESHOLD = 24;
+  const SWIPE_LOCK_THRESHOLD = 6;
+  const SWIPE_STEP = 55;
+  const SWIPE_END_THRESHOLD = 18;
   const shouldIgnoreCoverflowGesture = (target) =>
     target &&
     target.closest &&
@@ -202,6 +205,9 @@ function setupEvents() {
     swipeState.startX = touch.clientX;
     swipeState.startY = touch.clientY;
     swipeState.stepCount = 0;
+    swipeState.startTime = event.timeStamp || Date.now();
+    swipeState.lastX = swipeState.startX;
+    swipeState.lastTime = swipeState.startTime;
   };
   const handleCoverflowTouchMove = (event) => {
     if (!swipeState.active) {
@@ -226,6 +232,8 @@ function setupEvents() {
       return;
     }
     event.preventDefault();
+    swipeState.lastX = touch.clientX;
+    swipeState.lastTime = event.timeStamp || Date.now();
     const nextStep = Math.trunc(deltaX / SWIPE_STEP);
     const delta = nextStep - swipeState.stepCount;
     if (delta === 0) {
@@ -241,11 +249,22 @@ function setupEvents() {
     if (!swipeState.active) {
       return;
     }
+    const touch = event.changedTouches ? event.changedTouches[0] : event;
+    const deltaX = touch.clientX - swipeState.startX;
+    const duration = Math.max(16, (swipeState.lastTime || event.timeStamp) - swipeState.startTime);
+    const velocity = Math.abs(deltaX) / duration;
+    const direction = deltaX > 0 ? -1 : 1;
     if (swipeState.axis === "x" && swipeState.stepCount === 0) {
-      const touch = event.changedTouches ? event.changedTouches[0] : event;
-      const deltaX = touch.clientX - swipeState.startX;
       if (Math.abs(deltaX) > SWIPE_END_THRESHOLD) {
-        moveActiveIndex(deltaX > 0 ? -1 : 1);
+        moveActiveIndex(direction);
+      }
+    } else if (swipeState.axis === "x") {
+      let extraSteps = 0;
+      if (velocity > 0.8) {
+        extraSteps = Math.min(4, Math.ceil((velocity - 0.8) * 4));
+      }
+      for (let i = 0; i < extraSteps; i += 1) {
+        moveActiveIndex(direction);
       }
     }
     swipeState.active = false;
