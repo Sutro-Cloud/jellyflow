@@ -1,6 +1,6 @@
 # Jellyflow
 
-A modern, coverflow-inspired Jellyfin music browser and player built with React + Vite.
+A modern, Jellyfin music browser and player built with React + Vite.
 
 ## Requirements
 
