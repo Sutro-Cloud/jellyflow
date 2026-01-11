@@ -21,7 +21,19 @@ export default function App() {
           <div className="coverflow">
             <div className="coverflow-stage">
               <div className="coverflow-track" id="coverflowTrack"></div>
-              <div className="coverflow-empty" id="coverflowEmpty" aria-live="polite">
+              <div
+                className="coverflow-empty is-visible is-brand-only"
+                id="coverflowEmpty"
+                aria-live="polite"
+              >
+                <div className="coverflow-empty-brand" id="coverflowEmptyBrand">
+                  <img
+                    className="coverflow-empty-logo"
+                    src="/jellyflow.png"
+                    alt="Jellyflow logo"
+                  />
+                  <div className="coverflow-empty-name">Jellyflow</div>
+                </div>
                 <div className="coverflow-empty-icon" id="coverflowEmptyIcon">&#128268;</div>
                 <div className="coverflow-empty-title" id="coverflowEmptyTitle">Connect to Jellyfin</div>
                 <div className="coverflow-empty-sub" id="coverflowEmptySub">
@@ -126,6 +138,7 @@ export default function App() {
               </button>
             </div>
           </div>
+          <div className="ad-slot" id="adSlot" aria-hidden="true"></div>
           <div className="footer-controls" id="cornerControls">
             <div
               className="status"

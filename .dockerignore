@@ -1,0 +1,8 @@
+node_modules
+dist
+.npm-cache
+.git
+.gitignore
+README.md
+AGENTS.md
+CONTRIBUTING.md

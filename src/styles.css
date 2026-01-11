@@ -335,6 +335,32 @@ body.is-playlist-open .playlist-toggle::after {
   font-size: 0.9rem;
 }
 
+.coverflow-empty-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.coverflow-empty-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.coverflow-empty.is-brand-only .coverflow-empty-icon,
+.coverflow-empty.is-brand-only .coverflow-empty-title,
+.coverflow-empty.is-brand-only .coverflow-empty-sub {
+  display: none;
+}
+
+.coverflow-empty.is-brand .coverflow-empty-sub {
+  color: var(--muted);
+}
+
 .coverflow-track {
   position: absolute;
   inset: 0;
@@ -867,6 +893,37 @@ body.is-playlist-open .playlist-toggle::after {
   gap: 14px;
 }
 
+.ad-slot {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  min-width: 220px;
+  max-width: 320px;
+  flex: 1 1 240px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: var(--panel-chip);
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ad-slot.is-visible {
+  display: flex;
+}
+
+.ad-slot .ad-fallback {
+  opacity: 0.65;
+}
+
+.ad-slot ins,
+.ad-slot iframe {
+  width: 100%;
+  height: 100%;
+}
+
 .footer-controls {
   display: flex;
   align-items: center;
@@ -876,6 +933,7 @@ body.is-playlist-open .playlist-toggle::after {
   display: flex;
   align-items: center;
   gap: 14px;
+  max-width: 550px;
 }
 
 .now-actions {
@@ -931,6 +989,7 @@ body.is-playlist-open .playlist-toggle::after {
 
 #audio {
   width: min(560px, 55vw);
+  max-width: 400px;
 }
 
 dialog {
@@ -1089,6 +1148,11 @@ dialog::backdrop {
   .player {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .ad-slot {
+    width: 100%;
+    max-width: none;
   }
 
   #audio {

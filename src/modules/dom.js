@@ -42,6 +42,7 @@ export function initDom() {
     nowCover: document.getElementById("nowCover"),
     nowTitle: document.getElementById("nowTitle"),
     nowSub: document.getElementById("nowSub"),
+    adSlot: document.getElementById("adSlot"),
     audio: document.getElementById("audio"),
     typeahead: document.getElementById("typeahead"),
     cornerControls: document.getElementById("cornerControls"),

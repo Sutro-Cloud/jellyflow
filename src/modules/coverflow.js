@@ -359,15 +359,24 @@ function updateCoverflowEmpty() {
     return;
   }
   const isConnected = Boolean(state.serverUrl && state.apiKey && state.userId);
-  const shouldShow = !state.albums.length && !state.isLoadingAlbums;
+  const shouldShow = !state.albums.length;
   if (!shouldShow) {
     dom.coverflowEmpty.classList.remove("is-visible");
+    dom.coverflowEmpty.classList.remove("is-brand");
+    dom.coverflowEmpty.classList.remove("is-brand-only");
     return;
   }
+  dom.coverflowEmpty.classList.add("is-brand");
+  dom.coverflowEmpty.classList.add("is-brand-only");
   if (isConnected) {
     dom.coverflowEmptyIcon.textContent = "\u266a";
-    dom.coverflowEmptyTitle.textContent = "No albums found";
-    dom.coverflowEmptySub.textContent = "Check your Jellyfin library settings.";
+    if (state.isLoadingAlbums) {
+      dom.coverflowEmptyTitle.textContent = "Loading albums";
+      dom.coverflowEmptySub.textContent = "Fetching your Jellyfin library.";
+    } else {
+      dom.coverflowEmptyTitle.textContent = "No albums found";
+      dom.coverflowEmptySub.textContent = "Check your Jellyfin library settings.";
+    }
   } else {
     dom.coverflowEmptyIcon.textContent = "\ud83d\udd0c";
     dom.coverflowEmptyTitle.textContent = "Connect to Jellyfin";

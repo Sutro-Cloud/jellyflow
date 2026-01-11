@@ -24,6 +24,7 @@ import {
 import { loadPlaylists, playPlaylistTrack, setPlaylistView, syncPlaylistHighlights } from "../modules/playlists.js";
 import { loadLyricsForTrack, maybeEstimateLyrics, syncLyrics } from "../modules/lyrics.js";
 import { onNowPlayingChange, playTrack, toggleAudioPlayback } from "../modules/playback.js";
+import { initAds } from "../modules/ads.js";
 
 function setupEvents() {
   dom.openSettings.addEventListener("click", () => {
@@ -124,6 +125,16 @@ function setupEvents() {
     },
     { passive: false }
   );
+  document.addEventListener("pointerdown", (event) => {
+    if (!state.openAlbumId) {
+      return;
+    }
+    const target = event.target;
+    if (target && target.closest && target.closest(".coverflow-item.is-open")) {
+      return;
+    }
+    closeOpenAlbum();
+  });
   window.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
@@ -314,6 +325,7 @@ export function initApp() {
   loadSettings();
   loadPreferences();
   initTheme();
+  initAds();
   setupEvents();
 
   onNowPlayingChange(syncTrackHighlights);
