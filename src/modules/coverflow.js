@@ -1,5 +1,11 @@
 import { dom } from "./dom.js";
-import { state, ALBUM_PAGE_LIMIT, TYPEAHEAD_LOOKUP_DELAY } from "./state.js";
+import {
+  state,
+  ALBUM_PAGE_LIMIT,
+  TYPEAHEAD_LOOKUP_DELAY,
+  IS_IOS,
+  IS_SMALL_VIEWPORT,
+} from "./state.js";
 import { fetchAlbumsPage, fetchJson, imageUrl } from "./api.js";
 import { albumArtist, albumSortKey, albumTitle, compareAlbumKeys } from "./music.js";
 import { formatRuntime, placeholderText } from "./utils.js";
@@ -14,9 +20,16 @@ const isSafari =
 const SAFARI_WILL_CHANGE_TIMEOUT = 450;
 const ALBUM_WINDOW_BUFFER = 3;
 const ALBUM_PREFETCH_THRESHOLD = 12;
-const MAX_LOADED_COUNT = ALBUM_PAGE_LIMIT * 2 + ALBUM_WINDOW_BUFFER * 2;
+const MAX_LOADED_COUNT =
+  IS_IOS || IS_SMALL_VIEWPORT
+    ? ALBUM_PAGE_LIMIT + ALBUM_WINDOW_BUFFER * 2
+    : ALBUM_PAGE_LIMIT * 2 + ALBUM_WINDOW_BUFFER * 2;
 let safariWillChangeBoost = false;
 let safariWillChangeTimer = null;
+const COVER_IMAGE_DEFAULT = 600;
+const COVER_IMAGE_SMALL = 420;
+const coverImageSize =
+  IS_IOS || IS_SMALL_VIEWPORT ? COVER_IMAGE_SMALL : COVER_IMAGE_DEFAULT;
 
 function clearSafariNearClasses() {
   if (!dom.coverflowTrack) {
@@ -61,8 +74,10 @@ function createCoverflowItem(album, index) {
   const hasImage = album.ImageTags && album.ImageTags.Primary;
   if (hasImage) {
     const img = document.createElement("img");
-    img.src = imageUrl(album.Id, 600);
+    img.src = imageUrl(album.Id, coverImageSize);
     img.alt = albumTitle(album);
+    img.loading = "lazy";
+    img.decoding = "async";
     media.appendChild(img);
   } else {
     const placeholder = document.createElement("div");
@@ -148,6 +163,10 @@ function renderCoverflow() {
   });
 
   updateCoverflow();
+  if (isSafari) {
+    boostSafariWillChange();
+    requestAnimationFrame(updateCoverflow);
+  }
 }
 
 function appendCoverflowItems(albums, offset) {
@@ -155,6 +174,10 @@ function appendCoverflowItems(albums, offset) {
     dom.coverflowTrack.appendChild(createCoverflowItem(album, offset + index));
   });
   updateCoverflow();
+  if (isSafari) {
+    boostSafariWillChange();
+    requestAnimationFrame(updateCoverflow);
+  }
 }
 
 function getWindowFetchStart() {
@@ -322,7 +345,10 @@ function updateCoverflow() {
     const albumId = item.dataset.albumId;
     const isOpen = albumId && albumId === state.openAlbumId;
     item.classList.toggle("is-open", isOpen);
-    item.classList.toggle("with-reflection", absOffset <= 3);
+    item.classList.toggle(
+      "with-reflection",
+      !IS_IOS && !IS_SMALL_VIEWPORT && absOffset <= 3
+    );
     item.style.zIndex = isOpen ? "200" : (100 - Math.abs(offset)).toString();
     item.style.opacity = Math.abs(offset) > 5 ? "0" : "1";
   });

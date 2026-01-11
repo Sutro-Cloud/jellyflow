@@ -385,6 +385,8 @@ body.is-playlist-open .playlist-toggle::after {
   inset: 0;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   touch-action: pan-y;
 }
 

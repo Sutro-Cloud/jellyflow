@@ -45,5 +45,24 @@ export const state = {
   playlistLoadToken: 0,
 };
 
-export const ALBUM_PAGE_LIMIT = 120;
+function isSmallViewport() {
+  if (typeof window === "undefined" || !window.matchMedia) {
+    return false;
+  }
+  return window.matchMedia("(max-width: 900px), (max-height: 640px)").matches;
+}
+
+function isIOS() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+const DEFAULT_ALBUM_PAGE_LIMIT = 120;
+const SMALL_ALBUM_PAGE_LIMIT = 60;
+export const IS_SMALL_VIEWPORT = isSmallViewport();
+export const IS_IOS = isIOS();
+export const ALBUM_PAGE_LIMIT =
+  IS_IOS || IS_SMALL_VIEWPORT ? SMALL_ALBUM_PAGE_LIMIT : DEFAULT_ALBUM_PAGE_LIMIT;
 export const TYPEAHEAD_LOOKUP_DELAY = 250;
