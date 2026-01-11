@@ -415,6 +415,14 @@ body.is-playlist-open .playlist-toggle::after {
   cursor: pointer;
 }
 
+.coverflow-item.is-active {
+  cursor: default;
+}
+
+.coverflow-item:not(.is-active) {
+  cursor: pointer;
+}
+
 .coverflow-item.is-active,
 .coverflow-item.is-near {
   will-change: transform;

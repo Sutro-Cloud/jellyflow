@@ -16,6 +16,7 @@ import {
   normalizeTypeaheadQuery,
   scheduleTypeaheadClear,
   scheduleTypeaheadLookup,
+  setActiveIndex,
   shouldUseServerLookup,
   showTypeahead,
   toggleOpenForActive,
@@ -146,6 +147,33 @@ function setupEvents() {
       moveActiveIndex(delta > 0 ? 1 : -1);
     },
     { passive: false }
+  );
+  dom.coverflowTrack.addEventListener(
+    "click",
+    (event) => {
+      if (event.target.closest(".tracklist") || event.target.closest(".coverflow-back")) {
+        return;
+      }
+      const candidates = document.elementsFromPoint(event.clientX, event.clientY);
+      const targetItem = candidates
+        .map((element) => (element.closest ? element.closest(".coverflow-item") : null))
+        .find((item) => item && !item.classList.contains("is-active"));
+      if (!targetItem) {
+        return;
+      }
+      const index = Number(targetItem.dataset.index);
+      if (!Number.isFinite(index)) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      if (state.openAlbumId) {
+        closeOpenAlbum();
+      }
+      setActiveIndex(index);
+      focusActiveCover();
+    },
+    { capture: true }
   );
   const swipeState = {
     active: false,
