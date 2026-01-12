@@ -33,6 +33,21 @@ function headers() {
   };
 }
 
+async function request(path, options = {}) {
+  const response = await fetch(`${state.serverUrl}${path}`, {
+    ...options,
+    headers: {
+      ...headers(),
+      ...(options.headers || {}),
+    },
+  });
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `Request failed: ${response.status}`);
+  }
+  return response;
+}
+
 export async function authenticateByName(serverUrl, username, password) {
   const response = await fetch(`${serverUrl}/Users/AuthenticateByName`, {
     method: "POST",
@@ -53,14 +68,25 @@ export async function authenticateByName(serverUrl, username, password) {
 }
 
 export async function fetchJson(path) {
-  const response = await fetch(`${state.serverUrl}${path}`, {
-    headers: headers(),
-  });
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Request failed: ${response.status}`);
-  }
+  const response = await request(path);
   return response.json();
+}
+
+export async function fetchItemUserData(itemId) {
+  try {
+    const data = await fetchJson(`/Users/${state.userId}/Items/${itemId}`);
+    if (data && typeof data === "object" && data.UserData) {
+      return data;
+    }
+  } catch (error) {
+    // Fall back to alternate lookup below.
+  }
+  return fetchJson(`/Items/${itemId}?UserId=${state.userId}`);
+}
+
+export async function setItemFavorite(itemId, isFavorite) {
+  const method = isFavorite ? "POST" : "DELETE";
+  await request(`/Users/${state.userId}/FavoriteItems/${itemId}`, { method });
 }
 
 export function imageUrl(itemId, size) {

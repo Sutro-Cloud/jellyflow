@@ -43,6 +43,10 @@ export const state = {
   playlistPlayback: null,
   playlistsLoading: false,
   playlistLoadToken: 0,
+  favoriteTrackId: null,
+  isFavorite: false,
+  favoriteBusy: false,
+  favoriteToken: 0,
 };
 
 function isSmallViewport() {

@@ -100,11 +100,13 @@ function renderPlaylistTracks(playlistId) {
     const artists = Array.isArray(track.Artists) && track.Artists.length
       ? track.Artists.join(", ")
       : track.AlbumArtist || "Unknown artist";
+    const isFavorite = Boolean(track?.UserData?.IsFavorite);
     const button = createTrackButton({
       number: (index + 1).toString().padStart(2, "0"),
       title: titleText,
       meta: `${albumName} · ${artists}`,
       duration: formatRuntime(track.RunTimeTicks),
+      isFavorite,
       dataset: { trackId: track.Id, playlistId },
       onClick: (event) => {
         event.stopPropagation();
@@ -161,7 +163,7 @@ async function ensurePlaylistTracks(playlistId) {
   updatePlaylistStatus("Loading tracks...");
   try {
     const data = await fetchJson(
-      `/Playlists/${playlistId}/Items?UserId=${state.userId}&IncludeItemTypes=Audio&Fields=RunTimeTicks,AlbumId,AlbumArtist,Artists,Album`
+      `/Playlists/${playlistId}/Items?UserId=${state.userId}&IncludeItemTypes=Audio&Fields=RunTimeTicks,AlbumId,AlbumArtist,Artists,Album,UserData`
     );
     const tracks = data.Items || [];
     state.playlistTracksById.set(playlistId, tracks);

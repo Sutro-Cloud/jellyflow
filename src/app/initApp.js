@@ -27,6 +27,7 @@ import {
 import { loadPlaylists, playPlaylistTrack, setPlaylistView, syncPlaylistHighlights } from "../modules/playlists.js";
 import { loadLyricsForTrack, maybeEstimateLyrics, syncLyrics } from "../modules/lyrics.js";
 import { onNowPlayingChange, playTrack, toggleAudioPlayback } from "../modules/playback.js";
+import { resetFavoriteState, toggleFavoriteForCurrentTrack } from "../modules/favorites.js";
 import { initAds } from "../modules/ads.js";
 import { initAnalytics } from "../modules/analytics.js";
 import { setStatus } from "../modules/ui.js";
@@ -119,6 +120,11 @@ function setupEvents() {
   if (dom.shuffleBtn) {
     dom.shuffleBtn.addEventListener("click", () => {
       void shufflePlay();
+    });
+  }
+  if (dom.favoriteToggle) {
+    dom.favoriteToggle.addEventListener("click", () => {
+      void toggleFavoriteForCurrentTrack();
     });
   }
   const setPlayerCollapsed = (isCollapsed) => {
@@ -534,6 +540,7 @@ export function initApp() {
   initAds();
   initAnalytics();
   setupEvents();
+  resetFavoriteState();
 
   onNowPlayingChange(syncTrackHighlights);
   onNowPlayingChange(syncPlaylistHighlights);

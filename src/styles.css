@@ -333,6 +333,14 @@ body.theme-dark .buymeacoffee-link {
   border-color: var(--panel-border);
 }
 
+.favorite-toggle.is-active {
+  color: #e24b4b;
+  border-color: rgba(226, 75, 75, 0.55);
+  background: rgba(226, 75, 75, 0.12);
+  box-shadow: 0 0 0 2px rgba(226, 75, 75, 0.28);
+  transform: translateY(-1px) scale(1.05);
+}
+
 body.is-lyrics-open .lyrics-toggle {
   color: #fff;
   border-color: var(--selection);
@@ -997,6 +1005,19 @@ body.is-playlist-open .playlist-toggle::after {
   font-size: 0.95rem;
 }
 
+.track-tail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: end;
+}
+
+.track-favorite {
+  color: #e24b4b;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
 .track .track-title {
   font-weight: 600;
 }
@@ -1574,6 +1595,10 @@ dialog::backdrop {
     display: none;
   }
 
+  .track-favorite {
+    display: none;
+  }
+
   .track .track-title {
     white-space: nowrap;
     overflow: hidden;
@@ -1758,6 +1783,10 @@ dialog::backdrop {
 
   .track span:first-child,
   .track span:last-child {
+    display: none;
+  }
+
+  .track-favorite {
     display: none;
   }
 

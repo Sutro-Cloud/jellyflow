@@ -3,6 +3,7 @@ import { state } from "./state.js";
 import { buildStreamUrlForTrack, imageUrl } from "./api.js";
 import { albumArtist, albumTitle } from "./music.js";
 import { loadLyricsForTrack } from "./lyrics.js";
+import { resetFavoriteState, syncFavoriteForTrack } from "./favorites.js";
 
 const nowPlayingListeners = new Set();
 
@@ -58,6 +59,7 @@ export function playTrack(album, track, index, options = {}) {
   dom.nowTitle.textContent = track.Name || "Untitled";
   dom.nowSub.textContent = `${albumTitle(album)} - ${albumArtist(album)}`;
   loadLyricsForTrack(track, album);
+  syncFavoriteForTrack(track);
   notifyNowPlayingChange();
 }
 
@@ -68,6 +70,7 @@ export function updateNowPlayingIdle() {
   const isConnected = Boolean(state.serverUrl && state.apiKey && state.userId);
   dom.nowTitle.textContent = "Nothing playing";
   dom.nowSub.textContent = isConnected ? "Waiting for track" : "Connect to start listening";
+  resetFavoriteState();
 }
 
 export function toggleAudioPlayback() {

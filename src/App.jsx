@@ -178,6 +178,16 @@ export default function App() {
                 &#128256;
               </button>
               <button
+                className="control-icon favorite-toggle"
+                id="favoriteToggle"
+                type="button"
+                aria-label="Favorite track"
+                aria-pressed="false"
+                title="Favorite track"
+              >
+                &#9825;
+              </button>
+              <button
                 className="lyrics-toggle"
                 id="lyricsPaneToggle"
                 type="button"

@@ -671,11 +671,13 @@ function renderTrackList(album, tracks) {
   }
   tracks.forEach((track, index) => {
     const durationText = formatRuntime(track.RunTimeTicks);
+    const isFavorite = Boolean(track?.UserData?.IsFavorite);
     const button = createTrackButton({
       number: (track.IndexNumber || index + 1).toString(),
       title: track.Name || "Untitled",
       meta: durationText,
       duration: durationText,
+      isFavorite,
       dataset: { trackId: track.Id },
       onClick: (event) => {
         event.stopPropagation();
@@ -1106,9 +1108,9 @@ export async function shufflePlay() {
     let tracks = state.tracksByAlbum.get(album.Id);
     if (!tracks) {
       try {
-        const data = await fetchJson(
-          `/Users/${state.userId}/Items?ParentId=${album.Id}&IncludeItemTypes=Audio&Recursive=true&SortBy=IndexNumber&Fields=RunTimeTicks,IndexNumber,Genres,Artists,AlbumArtist,Album`
-        );
+    const data = await fetchJson(
+      `/Users/${state.userId}/Items?ParentId=${album.Id}&IncludeItemTypes=Audio&Recursive=true&SortBy=IndexNumber&Fields=RunTimeTicks,IndexNumber,Genres,Artists,AlbumArtist,Album,UserData`
+    );
         tracks = data.Items || [];
         state.tracksByAlbum.set(album.Id, tracks);
       } catch (error) {

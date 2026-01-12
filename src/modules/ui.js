@@ -5,7 +5,16 @@ export function setStatus(text, tone = "idle") {
   dom.status.dataset.tone = tone;
 }
 
-export function createTrackButton({ number, title, meta, duration, dataset, onClick, onFocus }) {
+export function createTrackButton({
+  number,
+  title,
+  meta,
+  duration,
+  isFavorite = false,
+  dataset,
+  onClick,
+  onFocus,
+}) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "track";
@@ -28,12 +37,23 @@ export function createTrackButton({ number, title, meta, duration, dataset, onCl
   titleWrap.appendChild(titleText);
   titleWrap.appendChild(metaText);
 
+  const tail = document.createElement("div");
+  tail.className = "track-tail";
+  if (isFavorite) {
+    const favoriteEl = document.createElement("span");
+    favoriteEl.className = "track-favorite";
+    favoriteEl.textContent = "\u2665";
+    favoriteEl.setAttribute("aria-hidden", "true");
+    tail.appendChild(favoriteEl);
+  }
+
   const durationEl = document.createElement("span");
   durationEl.textContent = duration;
+  tail.appendChild(durationEl);
 
   button.appendChild(numberEl);
   button.appendChild(titleWrap);
-  button.appendChild(durationEl);
+  button.appendChild(tail);
 
   if (onClick) {
     button.addEventListener("click", onClick);
