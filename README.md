@@ -73,6 +73,17 @@ VITE_ADS_TXT=google.com, pub-xxxxxxxxxxxxxxxx, DIRECT, f08c47fec0942fa0
 When enabled, an ad slot appears between the now playing info and the status controls.
 If `VITE_ADS_TXT` is set, the build outputs `ads.txt` at the site root.
 
+## Analytics (optional)
+
+Enable Google Analytics (GA4) via Vite env vars:
+
+```bash
+VITE_GA_ENABLED=true
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+# Optional override:
+# VITE_GA_SCRIPT_URL=https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX
+```
+
 ## Connect to Jellyfin
 
 1. Click **Connect**.

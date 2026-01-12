@@ -28,6 +28,7 @@ import { loadPlaylists, playPlaylistTrack, setPlaylistView, syncPlaylistHighligh
 import { loadLyricsForTrack, maybeEstimateLyrics, syncLyrics } from "../modules/lyrics.js";
 import { onNowPlayingChange, playTrack, toggleAudioPlayback } from "../modules/playback.js";
 import { initAds } from "../modules/ads.js";
+import { initAnalytics } from "../modules/analytics.js";
 import { setStatus } from "../modules/ui.js";
 
 function setupEvents() {
@@ -531,6 +532,7 @@ export function initApp() {
   loadPreferences();
   initTheme();
   initAds();
+  initAnalytics();
   setupEvents();
 
   onNowPlayingChange(syncTrackHighlights);
