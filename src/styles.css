@@ -15,9 +15,10 @@
   --ink: #141414;
   --muted: #5c5c5c;
   --selection: #2f6df6;
-  --accent: #f05d5e;
-  --accent-dark: #dd4f50;
+  --accent: #2f6df6;
+  --accent-dark: #1f57d6;
   --mint: #1f9d8b;
+  --control-bg: rgba(20, 20, 20, 0.18);
   --audio-width: min(560px, 55vw);
   --audio-max-width: 400px;
   --shadow: rgba(20, 20, 20, 0.12);
@@ -45,9 +46,10 @@ body.theme-dark {
   --ink: #f3eee6;
   --muted: #bcb6ae;
   --selection: #7aa7ff;
-  --accent: #ff7a5c;
-  --accent-dark: #ff6b52;
+  --accent: #4b82ff;
+  --accent-dark: #2f6df6;
   --mint: #4bc3a5;
+  --control-bg: rgba(255, 255, 255, 0.18);
   --shadow: rgba(0, 0, 0, 0.45);
   --shadow-strong: rgba(0, 0, 0, 0.7);
   --bg-gradient: radial-gradient(circle at top, #1b1b1b 0%, #0f0f0f 55%, #060606 100%);
@@ -941,7 +943,7 @@ body.is-playlist-open .playlist-toggle::after {
 }
 
 .track.is-playing {
-  background: rgba(31, 157, 139, 0.12);
+  background: rgba(47, 109, 246, 0.18);
   box-shadow: none;
 }
 
@@ -1004,7 +1006,6 @@ body.is-playlist-open .playlist-toggle::after {
   display: flex;
   align-items: center;
   gap: 14px;
-  max-width: 550px;
 }
 
 .now-actions {
@@ -1017,6 +1018,7 @@ body.is-playlist-open .playlist-toggle::after {
 .now-actions .lyrics-toggle,
 .now-actions .playlist-toggle,
 .now-actions .control-icon {
+  background: var(--control-bg);
   box-shadow: none;
   font-size: 1.1rem;
 }
@@ -1103,8 +1105,9 @@ body.is-playlist-open .playlist-toggle::after {
 .now-info {
   display: grid;
   gap: 2px;
-  min-width: 0;
-  flex: 1;
+  min-width: 250px;
+  max-width: 250px;
+  flex: 0 0 250px;
 }
 
 .now-title {
@@ -1720,13 +1723,13 @@ dialog::backdrop {
   }
 
   .coverflow-section {
-    --cover-size: 500px;
+    --cover-size: 600px;
   }
 
   .coverflow-item {
-    --reflection-height: 140px;
-    --cover-spacing: 360px;
-    --cover-depth: -230px;
+    --reflection-height: 170px;
+    --cover-spacing: 430px;
+    --cover-depth: -280px;
     --cover-tilt: -24deg;
   }
 
