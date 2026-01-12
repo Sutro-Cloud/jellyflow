@@ -158,6 +158,7 @@ body::before {
 
 button {
   font-family: inherit;
+  color: inherit;
 }
 
 button.ghost,
@@ -1744,4 +1745,21 @@ dialog::backdrop {
       --cover-tilt: -20deg;
     }
   }
+}
+.track,
+.playlist-entry {
+  color: var(--ink);
+}
+
+.track .track-meta,
+.playlist-count {
+  color: var(--muted);
+}
+
+a[x-apple-data-detectors],
+a[x-apple-data-detectors]:hover,
+a[x-apple-data-detectors]:active,
+a[x-apple-data-detectors]:focus {
+  color: inherit !important;
+  text-decoration: none;
 }
