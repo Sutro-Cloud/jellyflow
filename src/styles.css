@@ -237,6 +237,50 @@ button.icon {
   height: 100%;
 }
 
+.github-link {
+  position: absolute;
+  top: calc(18px + env(safe-area-inset-top));
+  left: calc(18px + env(safe-area-inset-left));
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #24292f;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 5;
+}
+
+.github-link:hover,
+.github-link:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.24);
+}
+
+.github-link:focus-visible {
+  outline: 2px solid var(--selection);
+  outline-offset: 2px;
+}
+
+.github-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+body.theme-dark .github-link {
+  background: #f6f8fa;
+  color: #24292f;
+  border-color: rgba(36, 41, 47, 0.18);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+}
+
 .lyrics-toggle,
 .playlist-toggle,
 .control-icon {
