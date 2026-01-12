@@ -30,7 +30,7 @@ export default function App() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label="View Jellyflow on GitHub"
-                  title="Fork it"
+                  title="Contribute to Jellyflow"
                 >
                   <svg
                     className="corner-link-icon"

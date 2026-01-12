@@ -56,34 +56,6 @@ Notes:
       image: ghcr.io/sutro-cloud/jellyflow:latest
   ```
 
-## Ads (optional)
-
-Ads are build-time toggles (Vite env vars). By default, ads are disabled.
-
-```bash
-VITE_ADS_ENABLED=true
-VITE_ADS_PROVIDER=adsense
-VITE_ADS_CLIENT=ca-pub-xxxxxxxxxxxxxxxx
-VITE_ADS_SLOT=1234567890
-VITE_ADS_TXT=google.com, pub-xxxxxxxxxxxxxxxx, DIRECT, f08c47fec0942fa0
-# Optional for custom providers:
-# VITE_ADS_SCRIPT_URL=https://example.com/ad.js
-```
-
-When enabled, an ad slot appears between the now playing info and the status controls.
-If `VITE_ADS_TXT` is set, the build outputs `ads.txt` at the site root.
-
-## Analytics (optional)
-
-Enable Google Analytics (GA4) via Vite env vars:
-
-```bash
-VITE_GA_ENABLED=true
-VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
-# Optional override:
-# VITE_GA_SCRIPT_URL=https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX
-```
-
 ## Connect to Jellyfin
 
 1. Click **Connect**.
@@ -93,8 +65,8 @@ VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 
 ## Notes
 
-- If your Jellyfin server blocks requests from this origin, enable CORS for `http://localhost:3000` in Jellyfin or your reverse proxy.
-- Album art and audio stream directly from your Jellyfin server using your API key.
+- If your Jellyfin server blocks requests from this origin, enable CORS for `http://localhost:8067` in Jellyfin or your reverse proxy.
+- Album art and audio stream directly from your Jellyfin server using your credentials.
 - Optional: enable “Fetch lyrics from LRCLIB (online)” in the connection dialog to load lyrics on the fly.
 
 ## Contributing
