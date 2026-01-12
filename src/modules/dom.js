@@ -24,6 +24,7 @@ export function initDom() {
     coverflowEmptyIcon: document.getElementById("coverflowEmptyIcon"),
     coverflowEmptyTitle: document.getElementById("coverflowEmptyTitle"),
     coverflowEmptySub: document.getElementById("coverflowEmptySub"),
+    connectSplashBtn: document.getElementById("connectSplashBtn"),
     coverflowSection: document.getElementById("coverflowSection"),
     albumMeta: document.getElementById("albumMeta"),
     albumLine: document.getElementById("albumLine"),

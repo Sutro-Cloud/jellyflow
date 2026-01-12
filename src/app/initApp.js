@@ -94,6 +94,11 @@ function setupEvents() {
       }
     });
   }
+  if (dom.connectSplashBtn) {
+    dom.connectSplashBtn.addEventListener("click", () => {
+      dom.settingsDialog.showModal();
+    });
+  }
   dom.loadUsersBtn.addEventListener("click", loadUsers);
   dom.connectBtn.addEventListener("click", connect);
   dom.resetBtn.addEventListener("click", resetForm);

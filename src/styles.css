@@ -337,6 +337,7 @@ body.is-playlist-open .playlist-toggle::after {
 
 .coverflow-empty.is-visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .coverflow-empty-icon {
@@ -376,6 +377,10 @@ body.is-playlist-open .playlist-toggle::after {
   width: 48px;
   height: 48px;
   object-fit: contain;
+}
+
+.coverflow-empty-connect {
+  margin-top: 6px;
 }
 
 .coverflow-empty.is-brand-only .coverflow-empty-icon,

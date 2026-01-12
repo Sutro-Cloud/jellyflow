@@ -34,6 +34,13 @@ export default function App() {
                   />
                   <div className="coverflow-empty-name">Jellyflow</div>
                 </div>
+                <button
+                  className="primary coverflow-empty-connect"
+                  id="connectSplashBtn"
+                  type="button"
+                >
+                  Connect to server
+                </button>
                 <div className="coverflow-empty-icon" id="coverflowEmptyIcon">&#9881;</div>
                 <div className="coverflow-empty-title" id="coverflowEmptyTitle"></div>
                 <div className="coverflow-empty-sub" id="coverflowEmptySub"></div>

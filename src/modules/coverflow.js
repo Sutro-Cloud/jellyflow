@@ -425,6 +425,9 @@ function updateCoverflowEmpty() {
     return;
   }
   const isConnected = Boolean(state.serverUrl && state.apiKey && state.userId);
+  if (dom.connectSplashBtn) {
+    dom.connectSplashBtn.hidden = isConnected;
+  }
   const shouldShow = !state.albums.length;
   if (!shouldShow) {
     dom.coverflowEmpty.classList.remove("is-visible");
