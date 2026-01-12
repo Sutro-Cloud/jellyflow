@@ -124,6 +124,15 @@ export default function App() {
                 &#9789;
               </button>
               <button
+                className="control-icon shuffle-toggle"
+                id="shuffleBtn"
+                type="button"
+                aria-label="Shuffle album and track"
+                title="Shuffle album and track"
+              >
+                &#128256;
+              </button>
+              <button
                 className="lyrics-toggle"
                 id="lyricsPaneToggle"
                 type="button"

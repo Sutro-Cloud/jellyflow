@@ -26,6 +26,7 @@ const MAX_LOADED_COUNT =
     : ALBUM_PAGE_LIMIT * 2 + ALBUM_WINDOW_BUFFER * 2;
 let safariWillChangeBoost = false;
 let safariWillChangeTimer = null;
+let coverflowAnimationToken = 0;
 const COVER_IMAGE_DEFAULT = 600;
 const COVER_IMAGE_SMALL = 420;
 const coverImageSize =
@@ -126,17 +127,7 @@ function createCoverflowItem(album, index) {
   titleWrap.appendChild(title);
   titleWrap.appendChild(subtitle);
 
-  const closeBtn = document.createElement("button");
-  closeBtn.type = "button";
-  closeBtn.className = "icon coverflow-back-close";
-  closeBtn.textContent = "\u00d7";
-  closeBtn.addEventListener("click", (event) => {
-    event.stopPropagation();
-    closeOpenAlbum();
-  });
-
   header.appendChild(titleWrap);
-  header.appendChild(closeBtn);
 
   const body = document.createElement("div");
   body.className = "coverflow-back-body";
@@ -385,10 +376,8 @@ function updateCoverflow() {
     const albumId = item.dataset.albumId;
     const isOpen = albumId && albumId === state.openAlbumId;
     item.classList.toggle("is-open", isOpen);
-    item.classList.toggle(
-      "with-reflection",
-      !IS_IOS && !IS_SMALL_VIEWPORT && absOffset <= 3
-    );
+    const allowReflection = absOffset <= 3 && (!IS_SMALL_VIEWPORT || IS_IOS);
+    item.classList.toggle("with-reflection", allowReflection);
     item.style.zIndex = isOpen ? "200" : (100 - Math.abs(offset)).toString();
     item.style.opacity = Math.abs(offset) > 5 ? "0" : "1";
   });
@@ -402,6 +391,44 @@ export function focusActiveCover() {
   if (item && document.activeElement !== item) {
     item.focus({ preventScroll: true });
   }
+}
+
+async function animateToIndex(targetIndex, options = {}) {
+  if (!state.albums.length) {
+    return;
+  }
+  const clampedTarget = Math.max(0, Math.min(state.albums.length - 1, targetIndex));
+  if (clampedTarget === state.activeIndex) {
+    focusActiveCover();
+    return;
+  }
+  const maxSteps = Number.isFinite(options.maxSteps) ? options.maxSteps : 10;
+  const stepDelay = Number.isFinite(options.stepDelay) ? options.stepDelay : 90;
+  const diff = clampedTarget - state.activeIndex;
+  const direction = diff > 0 ? 1 : -1;
+  const totalSteps = Math.abs(diff);
+  const steps = Math.min(totalSteps, maxSteps);
+  if (totalSteps > maxSteps) {
+    const jumpIndex = clampedTarget - direction * steps;
+    setActiveIndex(jumpIndex);
+  }
+  const token = ++coverflowAnimationToken;
+  return new Promise((resolve) => {
+    const step = () => {
+      if (token !== coverflowAnimationToken) {
+        resolve();
+        return;
+      }
+      setActiveIndex(state.activeIndex + direction);
+      if (state.activeIndex === clampedTarget) {
+        focusActiveCover();
+        resolve();
+        return;
+      }
+      setTimeout(step, stepDelay);
+    };
+    setTimeout(step, stepDelay);
+  });
 }
 
 function updateAlbumMeta() {
@@ -1031,7 +1058,7 @@ async function findAlbumIndexByKeyOnServer(targetKey, token) {
   return candidate;
 }
 
-async function loadAlbumWindowAndFocusById(startIndex, albumId, token) {
+async function loadAlbumWindowAndFocusById(startIndex, albumId, token, options = {}) {
   await loadAlbumWindow(startIndex, 0, { type: "jump", token });
   if (token !== state.jumpToken) {
     return false;
@@ -1040,23 +1067,82 @@ async function loadAlbumWindowAndFocusById(startIndex, albumId, token) {
   if (localIndex === -1) {
     return false;
   }
+  if (options.animate) {
+    await animateToIndex(localIndex, options.animateOptions);
+    return true;
+  }
   setActiveIndex(localIndex);
   focusActiveCover();
   return true;
 }
 
-export async function jumpToAlbumById(albumId) {
+export async function shufflePlay() {
+  if (!state.serverUrl || !state.apiKey || !state.userId) {
+    setStatus("Connect to shuffle", "warn");
+    return;
+  }
+  let total = state.albumTotal;
+  if (!total) {
+    try {
+      const data = await fetchAlbumsPage(0, 1);
+      total = data.TotalRecordCount || 0;
+      state.albumTotal = total;
+    } catch (error) {
+      setStatus("Shuffle failed", "warn");
+      return;
+    }
+  }
+  if (!total) {
+    setStatus("No albums found", "warn");
+    return;
+  }
+  const maxAttempts = Math.min(6, total);
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const randomIndex = Math.floor(Math.random() * total);
+    const album = await fetchAlbumAtIndex(randomIndex);
+    if (!album) {
+      continue;
+    }
+    let tracks = state.tracksByAlbum.get(album.Id);
+    if (!tracks) {
+      try {
+        const data = await fetchJson(
+          `/Users/${state.userId}/Items?ParentId=${album.Id}&IncludeItemTypes=Audio&Recursive=true&SortBy=IndexNumber&Fields=RunTimeTicks,IndexNumber,Genres,Artists,AlbumArtist,Album`
+        );
+        tracks = data.Items || [];
+        state.tracksByAlbum.set(album.Id, tracks);
+      } catch (error) {
+        continue;
+      }
+    }
+    if (!tracks.length) {
+      continue;
+    }
+    const trackIndex = Math.floor(Math.random() * tracks.length);
+    playTrack(album, tracks[trackIndex], trackIndex);
+    void jumpToAlbumById(album.Id, { animate: true });
+    return;
+  }
+  setStatus("Shuffle found no tracks", "warn");
+}
+
+export async function jumpToAlbumById(albumId, options = {}) {
   if (!albumId || !state.serverUrl || !state.apiKey || !state.userId) {
     return;
   }
+  const animate = Boolean(options.animate);
   if (state.openAlbumId) {
     closeOpenAlbum();
   }
   clearTypeahead();
   const localIndex = state.albums.findIndex((album) => album.Id === albumId);
   if (localIndex !== -1) {
-    setActiveIndex(localIndex);
-    focusActiveCover();
+    if (animate) {
+      await animateToIndex(localIndex, options.animateOptions);
+    } else {
+      setActiveIndex(localIndex);
+      focusActiveCover();
+    }
     return;
   }
   const token = ++state.jumpToken;
@@ -1074,12 +1160,18 @@ export async function jumpToAlbumById(albumId) {
     const maxStart = Math.max(0, total - ALBUM_PAGE_LIMIT);
     const half = Math.floor(ALBUM_PAGE_LIMIT / 2);
     const centeredStart = Math.max(0, Math.min(maxStart, baseIndex - half));
-    const foundCentered = await loadAlbumWindowAndFocusById(centeredStart, albumId, token);
+    const foundCentered = await loadAlbumWindowAndFocusById(centeredStart, albumId, token, {
+      animate,
+      animateOptions: options.animateOptions,
+    });
     if (token !== state.jumpToken || foundCentered) {
       return;
     }
     const startAtBase = Math.max(0, Math.min(maxStart, baseIndex));
-    const foundAtBase = await loadAlbumWindowAndFocusById(startAtBase, albumId, token);
+    const foundAtBase = await loadAlbumWindowAndFocusById(startAtBase, albumId, token, {
+      animate,
+      animateOptions: options.animateOptions,
+    });
     if (token !== state.jumpToken) {
       return;
     }

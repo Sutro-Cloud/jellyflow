@@ -17,6 +17,7 @@ import {
   normalizeTypeaheadQuery,
   scheduleTypeaheadClear,
   scheduleTypeaheadLookup,
+  shufflePlay,
   setActiveIndex,
   shouldUseServerLookup,
   showTypeahead,
@@ -114,6 +115,11 @@ function setupEvents() {
     const nextTheme = document.body.classList.contains("theme-dark") ? "light" : "dark";
     applyTheme(nextTheme);
   });
+  if (dom.shuffleBtn) {
+    dom.shuffleBtn.addEventListener("click", () => {
+      void shufflePlay();
+    });
+  }
   const setPlayerCollapsed = (isCollapsed) => {
     if (!dom.playerFooter) {
       return;
@@ -478,13 +484,24 @@ function setupEvents() {
         return;
       }
     }
-    const tracks = state.tracksByAlbum.get(state.nowPlaying.albumId) || [];
-    const nextIndex = state.nowPlaying.index + 1;
+    const albumId = state.nowPlaying.albumId;
+    const tracks = state.tracksByAlbum.get(albumId) || [];
+    let currentIndex = state.nowPlaying.index;
+    if (!Number.isFinite(currentIndex) && state.currentTrack) {
+      currentIndex = tracks.findIndex((track) => track.Id === state.currentTrack.Id);
+    }
+    if (!Number.isFinite(currentIndex) || currentIndex < 0) {
+      return;
+    }
+    const nextIndex = currentIndex + 1;
     if (tracks[nextIndex]) {
-      const album = state.albums.find((item) => item.Id === state.nowPlaying.albumId);
-      if (album) {
-        playTrack(album, tracks[nextIndex], nextIndex);
+      const album =
+        state.albums.find((item) => item.Id === albumId) ||
+        (state.currentAlbum && state.currentAlbum.Id === albumId ? state.currentAlbum : null);
+      if (!album) {
+        return;
       }
+      playTrack(album, tracks[nextIndex], nextIndex);
     }
   });
   dom.audio.addEventListener("timeupdate", () => {

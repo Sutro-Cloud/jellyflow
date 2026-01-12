@@ -15,9 +15,10 @@
   --ink: #141414;
   --muted: #5c5c5c;
   --selection: #2f6df6;
-  --accent: #f05d5e;
-  --accent-dark: #dd4f50;
+  --accent: #2f6df6;
+  --accent-dark: #1f57d6;
   --mint: #1f9d8b;
+  --control-bg: rgba(20, 20, 20, 0.18);
   --audio-width: min(560px, 55vw);
   --audio-max-width: 400px;
   --shadow: rgba(20, 20, 20, 0.12);
@@ -45,9 +46,10 @@ body.theme-dark {
   --ink: #f3eee6;
   --muted: #bcb6ae;
   --selection: #7aa7ff;
-  --accent: #ff7a5c;
-  --accent-dark: #ff6b52;
+  --accent: #4b82ff;
+  --accent-dark: #2f6df6;
   --mint: #4bc3a5;
+  --control-bg: rgba(255, 255, 255, 0.18);
   --shadow: rgba(0, 0, 0, 0.45);
   --shadow-strong: rgba(0, 0, 0, 0.7);
   --bg-gradient: radial-gradient(circle at top, #1b1b1b 0%, #0f0f0f 55%, #060606 100%);
@@ -217,6 +219,10 @@ button.icon {
 .coverflow-section {
   --lyrics-rail: 400px;
   --playlist-rail: 400px;
+  --cover-size: 420px;
+  --album-line-offset: 14px;
+  --album-count-top: 14px;
+  --album-count-pad: 24px;
   position: relative;
   background: transparent;
   border-radius: 28px;
@@ -224,7 +230,7 @@ button.icon {
   box-shadow: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: 75fr 10fr;
+  grid-template-rows: 1fr;
   gap: 12px;
   min-height: 0;
   height: 100%;
@@ -233,9 +239,9 @@ button.icon {
 .lyrics-toggle,
 .playlist-toggle,
 .control-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
   border: 1px solid var(--field-border);
   background: var(--ghost);
   color: var(--muted);
@@ -244,6 +250,7 @@ button.icon {
   place-items: center;
   cursor: pointer;
   line-height: 1;
+  font-size: 1rem;
   transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
   flex-shrink: 0;
 }
@@ -416,7 +423,6 @@ body.is-playlist-open .playlist-toggle::after {
   position: absolute;
   top: 50%;
   left: 50%;
-  --cover-size: 420px;
   --cover-spacing: 300px;
   --cover-depth: -190px;
   --cover-tilt: -24deg;
@@ -510,8 +516,11 @@ body.is-playlist-open .playlist-toggle::after {
 }
 
 @supports (-webkit-touch-callout: none) {
-  .coverflow-item {
+  .coverflow-section {
     --cover-size: 340px;
+  }
+
+  .coverflow-item {
     --cover-spacing: 220px;
     --cover-depth: -130px;
     --cover-tilt: -20deg;
@@ -834,26 +843,32 @@ body.is-playlist-open .playlist-toggle::after {
 }
 
 .album-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 6px;
+  position: absolute;
+  inset: 0;
   min-height: 0;
-  grid-column: 1;
-  grid-row: 2;
+  z-index: 4;
+  pointer-events: none;
 }
 
 .album-line {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + (var(--cover-size) * 0.5) + var(--album-line-offset));
+  transform: translateX(-50%);
   font-size: 1rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  text-align: center;
+  max-width: min(78vw, 520px);
 }
 
 .album-count {
+  position: absolute;
+  top: calc(var(--album-count-top) + env(safe-area-inset-top));
+  right: var(--album-count-pad);
   color: var(--muted);
   font-size: 0.85rem;
   white-space: nowrap;
@@ -928,7 +943,7 @@ body.is-playlist-open .playlist-toggle::after {
 }
 
 .track.is-playing {
-  background: rgba(31, 157, 139, 0.12);
+  background: rgba(47, 109, 246, 0.18);
   box-shadow: none;
 }
 
@@ -991,7 +1006,6 @@ body.is-playlist-open .playlist-toggle::after {
   display: flex;
   align-items: center;
   gap: 14px;
-  max-width: 550px;
 }
 
 .now-actions {
@@ -1004,7 +1018,9 @@ body.is-playlist-open .playlist-toggle::after {
 .now-actions .lyrics-toggle,
 .now-actions .playlist-toggle,
 .now-actions .control-icon {
+  background: var(--control-bg);
   box-shadow: none;
+  font-size: 1.1rem;
 }
 
 .player-collapse {
@@ -1089,8 +1105,9 @@ body.is-playlist-open .playlist-toggle::after {
 .now-info {
   display: grid;
   gap: 2px;
-  min-width: 0;
-  flex: 1;
+  min-width: 250px;
+  max-width: 250px;
+  flex: 0 0 250px;
 }
 
 .now-title {
@@ -1279,28 +1296,39 @@ dialog::backdrop {
 
 @media (max-width: 640px) {
   .coverflow-stage {
-    min-height: 300px;
+    min-height: 320px;
   }
 
   .coverflow-item {
-    --cover-size: 260px;
     --reflection-height: 70px;
-    --cover-spacing: 170px;
+    --cover-spacing: 160px;
     --cover-depth: -95px;
-    --cover-tilt: -24deg;
+    --cover-tilt: -22deg;
   }
 
   @supports (-webkit-touch-callout: none) {
     .coverflow-item {
-      --cover-size: 210px;
-      --cover-spacing: 120px;
-      --cover-depth: -70px;
-      --cover-tilt: -20deg;
+      --cover-spacing: 160px;
+      --cover-depth: -95px;
+      --cover-tilt: -18deg;
     }
   }
 
   .coverflow-section {
+    --cover-size: 230px;
+    --album-line-offset: 12px;
+    --album-count-top: 12px;
+    --album-count-pad: 20px;
     --lyrics-rail: 44vw;
+  }
+
+  .now-actions .lyrics-toggle,
+  .now-actions .playlist-toggle,
+  .now-actions .control-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    font-size: 1.35rem;
   }
 }
 
@@ -1315,31 +1343,33 @@ dialog::backdrop {
   }
 
   .main {
-    padding: 16px 18px 12px;
+    padding: 0px 18px;
     gap: 16px;
   }
 
   .coverflow-section {
     padding: 16px 16px 12px;
+    --cover-size: 230px;
+    --album-line-offset: 10px;
+    --album-count-top: 10px;
+    --album-count-pad: 18px;
   }
 
   .coverflow-stage {
-    min-height: 240px;
+    min-height: 280px;
   }
 
   .coverflow-item {
-    --cover-size: 240px;
     --reflection-height: 70px;
-    --cover-spacing: 150px;
-    --cover-depth: -90px;
-    --cover-tilt: -22deg;
+    --cover-spacing: 160px;
+    --cover-depth: -95px;
+    --cover-tilt: -20deg;
   }
 
   @supports (-webkit-touch-callout: none) {
     .coverflow-item {
-      --cover-size: 210px;
-      --cover-spacing: 120px;
-      --cover-depth: -70px;
+      --cover-spacing: 160px;
+      --cover-depth: -95px;
       --cover-tilt: -18deg;
     }
   }
@@ -1348,13 +1378,20 @@ dialog::backdrop {
     font-size: 0.95rem;
   }
 
+
   .player {
-    padding: 12px 18px 16px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    padding: 0 18px;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(120px, var(--audio-width));
     column-gap: 10px;
     align-items: center;
     justify-content: stretch;
+    pointer-events: none;
+    z-index: 6;
   }
 
   .player.is-collapsed {
@@ -1369,6 +1406,7 @@ dialog::backdrop {
     gap: 8px;
     position: relative;
     align-self: center;
+    pointer-events: auto;
   }
 
   .ad-slot {
@@ -1390,13 +1428,16 @@ dialog::backdrop {
 
   .now-actions {
     gap: 4px;
+    pointer-events: auto;
   }
 
   .now-actions .lyrics-toggle,
   .now-actions .playlist-toggle,
   .now-actions .control-icon {
-    width: 24px;
-    height: 24px;
+    width: 48px;
+    height: 48px;
+    border-radius: 18px;
+    font-size: 1.5rem;
   }
 
 
@@ -1404,13 +1445,14 @@ dialog::backdrop {
     width: 100%;
     min-width: 120px;
     align-self: center;
+    pointer-events: auto;
   }
 
   .status {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     padding: 0;
-    border-radius: 12px;
+    border-radius: 16px;
     border: 1px solid var(--field-border);
     font-size: 0;
     display: grid;
@@ -1418,6 +1460,7 @@ dialog::backdrop {
     background: var(--ghost);
     color: var(--muted);
     transition: transform 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    pointer-events: auto;
   }
 
   .status::before {
@@ -1430,12 +1473,18 @@ dialog::backdrop {
     position: absolute;
     left: 0;
     top: -6px;
+    pointer-events: auto;
   }
 
   .player-collapse {
     display: grid;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
+    pointer-events: auto;
+  }
+
+  .player-reveal {
+    pointer-events: auto;
   }
 
   .tracklist {
@@ -1498,11 +1547,15 @@ dialog::backdrop {
   }
 
   .main {
-    padding: 12px 16px 8px;
+    padding: 0px 16px;
   }
 
   .coverflow-section {
     padding: 12px 14px 10px;
+    --cover-size: 230px;
+    --album-line-offset: 8px;
+    --album-count-top: 8px;
+    --album-count-pad: 16px;
   }
 
   .coverflow-stage {
@@ -1510,18 +1563,16 @@ dialog::backdrop {
   }
 
   .coverflow-item {
-    --cover-size: 195px;
-    --reflection-height: 55px;
-    --cover-spacing: 130px;
-    --cover-depth: -70px;
+    --reflection-height: 65px;
+    --cover-spacing: 160px;
+    --cover-depth: -95px;
     --cover-tilt: -20deg;
   }
 
   @supports (-webkit-touch-callout: none) {
     .coverflow-item {
-      --cover-size: 175px;
-      --cover-spacing: 110px;
-      --cover-depth: -60px;
+      --cover-spacing: 160px;
+      --cover-depth: -95px;
       --cover-tilt: -18deg;
     }
   }
@@ -1529,6 +1580,7 @@ dialog::backdrop {
   .album-line {
     font-size: 0.9rem;
   }
+
 
   .player {
     padding: 10px 16px 12px;
@@ -1578,8 +1630,10 @@ dialog::backdrop {
   .now-actions .lyrics-toggle,
   .now-actions .playlist-toggle,
   .now-actions .control-icon {
-    width: 24px;
-    height: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    font-size: 1.2rem;
   }
 
   #audio {
@@ -1668,17 +1722,23 @@ dialog::backdrop {
     min-height: 580px;
   }
 
+  .coverflow-section {
+    --cover-size: 600px;
+  }
+
   .coverflow-item {
-    --cover-size: 500px;
-    --reflection-height: 140px;
-    --cover-spacing: 360px;
-    --cover-depth: -230px;
+    --reflection-height: 170px;
+    --cover-spacing: 430px;
+    --cover-depth: -280px;
     --cover-tilt: -24deg;
   }
 
   @supports (-webkit-touch-callout: none) {
-    .coverflow-item {
+    .coverflow-section {
       --cover-size: 420px;
+    }
+
+    .coverflow-item {
       --cover-spacing: 260px;
       --cover-depth: -170px;
       --cover-tilt: -20deg;
