@@ -110,7 +110,18 @@ export default function App() {
           </div>
           <div className="album-meta" id="albumMeta">
             <div className="album-line" id="albumLine"></div>
-            <div className="album-count" id="albumCount">0 albums</div>
+            <div className="album-meta-top">
+              <button
+                className="control-icon search-toggle album-search"
+                id="searchToggle"
+                type="button"
+                aria-label="Search albums"
+                title="Search albums"
+              >
+                <Search className="icon" {...iconProps} />
+              </button>
+              <div className="album-count" id="albumCount">0 albums</div>
+            </div>
           </div>
           <div className="lyrics-panel" id="lyricsPanel">
             <div className="lyrics-header">
@@ -181,6 +192,8 @@ export default function App() {
               <div className="now-title" id="nowTitle">Nothing playing</div>
               <div className="now-sub" id="nowSub">Connect to start listening</div>
             </div>
+          </div>
+          <div className="player-controls-row">
             <div className="now-actions">
               <div className="settings-menu" id="settingsMenuWrap">
                 <button
@@ -293,6 +306,7 @@ export default function App() {
                 <Heart className="icon" {...iconProps} />
               </button>
             </div>
+            <audio id="audio" controls preload="auto"></audio>
           </div>
           <div className="ad-slot" id="adSlot" aria-hidden="true"></div>
           <div className="footer-controls" id="cornerControls">
@@ -304,18 +318,8 @@ export default function App() {
               tabIndex={0}
               aria-label="Open connection settings"
             ></div>
-            <button
-              className="control-icon search-toggle"
-              id="searchToggle"
-              type="button"
-              aria-label="Search albums"
-              title="Search albums"
-            >
-              <Search className="icon" {...iconProps} />
-            </button>
           </div>
         </div>
-        <audio id="audio" controls preload="auto"></audio>
         <button
           className="player-reveal"
           id="playerReveal"

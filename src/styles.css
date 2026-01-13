@@ -981,6 +981,16 @@ body.is-playlist-open .playlist-toggle::after {
   pointer-events: none;
 }
 
+.album-meta-top {
+  position: absolute;
+  top: calc(var(--album-count-top) + env(safe-area-inset-top));
+  right: var(--album-count-pad);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
 .album-line {
   position: absolute;
   left: 50%;
@@ -997,12 +1007,21 @@ body.is-playlist-open .playlist-toggle::after {
 }
 
 .album-count {
-  position: absolute;
-  top: calc(var(--album-count-top) + env(safe-area-inset-top));
-  right: var(--album-count-pad);
   color: var(--muted);
   font-size: 0.85rem;
   white-space: nowrap;
+}
+
+.album-search {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+}
+
+.album-search .icon {
+  width: 14px;
+  height: 14px;
 }
 
 .tracklist {
@@ -1161,8 +1180,12 @@ body.is-audio-paused .track.is-playing .track-playing i {
 
 .player-left {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
+  width: 100%;
 }
 
 .ad-slot {
@@ -1214,6 +1237,17 @@ body.is-audio-paused .track.is-playing .track-playing i {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.player-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.player-controls-row #audio {
+  margin-left: auto;
 }
 
 .now-actions {
@@ -1358,8 +1392,7 @@ body.theme-dark .settings-menu-item.is-active {
   border-color: var(--panel-border);
 }
 
-.player.is-collapsed .player-left,
-.player.is-collapsed #audio {
+.player.is-collapsed .player-left {
   display: none;
 }
 
@@ -1729,18 +1762,16 @@ dialog::backdrop {
     right: 0;
     bottom: calc(12px + env(safe-area-inset-bottom));
     padding: 0 18px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(120px, var(--audio-width));
-    column-gap: 10px;
-    align-items: center;
-    justify-content: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     pointer-events: none;
     z-index: 6;
   }
 
   .player.is-collapsed {
-    grid-template-columns: 1fr;
-    justify-items: center;
+    align-items: center;
     padding: 6px 0 8px;
   }
 
@@ -1786,9 +1817,7 @@ dialog::backdrop {
     font-size: 1.5rem;
   }
 
-
   #audio {
-    width: 100%;
     min-width: 120px;
     align-self: center;
     pointer-events: auto;
@@ -1891,31 +1920,27 @@ dialog::backdrop {
 }
 
 @media (max-width: 540px) and (orientation: portrait) {
-  .player {
-    grid-template-columns: 1fr;
-    row-gap: 10px;
-  }
-
   .player-left {
     align-items: stretch;
   }
 
-  .now-cover {
-    display: none;
+  .now-playing {
+    align-items: stretch;
   }
 
-  .now-playing {
+  .now-actions {
+    justify-content: flex-start;
+  }
+
+  .player-controls-row {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .now-info {
-    order: 1;
-  }
-
-  .now-actions {
-    order: 2;
-    justify-content: flex-start;
+  .player-controls-row #audio {
+    margin-left: 0;
+    width: 100%;
+    min-width: 120px;
   }
 
   .settings-menu-popover {
@@ -1923,9 +1948,6 @@ dialog::backdrop {
     left: 0;
   }
 
-  #audio {
-    order: 3;
-  }
 }
 
 @media (max-height: 700px) {
@@ -1982,16 +2004,14 @@ dialog::backdrop {
 
   .player {
     padding: 10px 16px 12px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(110px, var(--audio-width));
-    column-gap: 8px;
-    align-items: center;
-    justify-content: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
 
   .player.is-collapsed {
-    grid-template-columns: 1fr;
-    justify-items: center;
+    align-items: center;
     padding: 6px 0 6px;
   }
 
@@ -2033,7 +2053,6 @@ dialog::backdrop {
   }
 
   #audio {
-    width: 100%;
     min-width: 110px;
     align-self: center;
   }
