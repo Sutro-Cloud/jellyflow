@@ -418,6 +418,10 @@ export default function App() {
             <span>Fetch lyrics from LRCLIB (online)</span>
           </label>
           <label className="toggle">
+            <input id="backgroundAudioToggle" type="checkbox" defaultChecked />
+            <span>Keep playing in background</span>
+          </label>
+          <label className="toggle">
             <input id="rememberToggle" type="checkbox" defaultChecked />
             <span>Remember connection on this device</span>
           </label>

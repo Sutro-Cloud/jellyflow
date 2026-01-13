@@ -34,6 +34,7 @@ export const state = {
   currentTrack: null,
   currentAlbum: null,
   lyricsOnline: true,
+  backgroundAudioEnabled: true,
   tracksByAlbum: new Map(),
   nowPlaying: null,
   playlists: [],

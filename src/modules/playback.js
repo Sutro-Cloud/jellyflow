@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+import { MediaSession as MediaSessionPlugin } from "@capgo/capacitor-media-session";
 import { dom } from "./dom.js";
 import { state } from "./state.js";
 import { buildStreamUrlForTrack, imageUrl } from "./api.js";
@@ -7,6 +9,20 @@ import { resetFavoriteState, syncFavoriteForTrack } from "./favorites.js";
 
 const supportsMediaSession = typeof navigator !== "undefined" && "mediaSession" in navigator;
 const supportsMediaMetadata = typeof MediaMetadata !== "undefined";
+const shouldUseNativeMediaSession = () =>
+  typeof Capacitor !== "undefined" &&
+  typeof Capacitor.isNativePlatform === "function" &&
+  Capacitor.isNativePlatform();
+const runNativeMediaSession = (callback) => {
+  if (!shouldUseNativeMediaSession()) {
+    return;
+  }
+  try {
+    callback();
+  } catch (error) {
+    // Ignore native media session errors.
+  }
+};
 const MAX_TITLE_LENGTH = 100;
 
 function buildNowPlayingTitle(album) {
@@ -39,21 +55,68 @@ function buildArtwork(albumId) {
   }));
 }
 
+function trackArtist(track, album) {
+  if (track?.AlbumArtist) {
+    const clean = track.AlbumArtist.toString().trim();
+    if (clean) {
+      return clean;
+    }
+  }
+  if (Array.isArray(track?.Artists) && track.Artists.length) {
+    const joined = track.Artists.join(", ").trim();
+    if (joined) {
+      return joined;
+    }
+  }
+  if (album) {
+    return albumArtist(album);
+  }
+  return "Unknown artist";
+}
+
+function trackAlbumTitle(track, album) {
+  if (track?.Album) {
+    const clean = track.Album.toString().trim();
+    if (clean) {
+      return clean;
+    }
+  }
+  if (album) {
+    return albumTitle(album);
+  }
+  return "Untitled";
+}
+
 export function setMediaSessionMetadata(album, track) {
-  if (!supportsMediaSession || !supportsMediaMetadata) {
+  const title = track?.Name || "Untitled";
+  const artist = trackArtist(track, album);
+  const albumName = trackAlbumTitle(track, album);
+  runNativeMediaSession(() => {
+    void MediaSessionPlugin.setMetadata({
+      title,
+      artist,
+      album: albumName,
+      artwork: buildArtwork(album?.Id),
+    });
+  });
+  if (!supportsMediaSession || !supportsMediaMetadata || shouldUseNativeMediaSession()) {
     return;
   }
-  const title = track?.Name || "Untitled";
   navigator.mediaSession.metadata = new MediaMetadata({
     title,
-    artist: albumArtist(album),
-    album: albumTitle(album),
+    artist,
+    album: albumName,
     artwork: buildArtwork(album?.Id),
   });
 }
 
 export function clearMediaSessionMetadata() {
-  if (!supportsMediaSession) {
+  runNativeMediaSession(() => {
+    void MediaSessionPlugin.setMetadata({ title: "", artist: "", album: "", artwork: [] });
+    void MediaSessionPlugin.setPlaybackState({ playbackState: "none" });
+    void MediaSessionPlugin.setPositionState({ duration: 0, playbackRate: 1, position: 0 });
+  });
+  if (!supportsMediaSession || shouldUseNativeMediaSession()) {
     return;
   }
   navigator.mediaSession.metadata = null;
@@ -68,17 +131,30 @@ export function clearMediaSessionMetadata() {
 }
 
 export function setMediaSessionPlaybackState(state) {
-  if (!supportsMediaSession) {
+  runNativeMediaSession(() => {
+    void MediaSessionPlugin.setPlaybackState({ playbackState: state });
+  });
+  if (!supportsMediaSession || shouldUseNativeMediaSession()) {
     return;
   }
   navigator.mediaSession.playbackState = state;
 }
 
 export function updateMediaSessionPosition() {
-  if (!supportsMediaSession || !navigator.mediaSession.setPositionState || !dom.audio) {
+  if (!dom.audio || !Number.isFinite(dom.audio.duration)) {
     return;
   }
-  if (!Number.isFinite(dom.audio.duration)) {
+  runNativeMediaSession(() => {
+    void MediaSessionPlugin.setPositionState({
+      duration: dom.audio.duration,
+      playbackRate: dom.audio.playbackRate || 1,
+      position: dom.audio.currentTime || 0,
+    });
+  });
+  if (!supportsMediaSession || shouldUseNativeMediaSession()) {
+    return;
+  }
+  if (!navigator.mediaSession.setPositionState) {
     return;
   }
   try {
@@ -116,6 +192,8 @@ export function playTrack(album, track, index, options = {}) {
   const playlistIndex = Number.isFinite(options.playlistIndex) ? options.playlistIndex : null;
   const hasFocusOverride = Object.prototype.hasOwnProperty.call(options, "trackFocusIndex");
   const focusIndex = hasFocusOverride ? options.trackFocusIndex : index;
+  const albumName = trackAlbumTitle(track, album);
+  const artistName = trackArtist(track, album);
   state.currentTrack = track;
   state.currentAlbum = album;
   state.trackFocusIndex = Number.isFinite(focusIndex) ? focusIndex : null;
@@ -128,8 +206,8 @@ export function playTrack(album, track, index, options = {}) {
     : null;
   state.nowPlaying = {
     albumId: album.Id,
-    albumName: albumTitle(album),
-    albumArtist: albumArtist(album),
+    albumName,
+    albumArtist: artistName,
     trackId: track.Id,
     trackName: track.Name || "Untitled",
     index,
@@ -144,7 +222,7 @@ export function playTrack(album, track, index, options = {}) {
   const artUrl = imageUrl(album.Id, 200);
   dom.nowCover.style.backgroundImage = `url('${artUrl}')`;
   dom.nowTitle.textContent = track.Name || "Untitled";
-  dom.nowSub.textContent = `${albumTitle(album)} - ${albumArtist(album)}`;
+  dom.nowSub.textContent = `${albumName} - ${artistName}`;
   loadLyricsForTrack(track, album);
   syncFavoriteForTrack(track);
   setMediaSessionMetadata(album, track);

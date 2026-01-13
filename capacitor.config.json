@@ -1,0 +1,6 @@
+{
+  "appId": "com.gojellyfin.app",
+  "appName": "Jellyflow",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

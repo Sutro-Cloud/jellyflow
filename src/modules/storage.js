@@ -14,6 +14,8 @@ export function rememberSettings() {
 export function savePreferences() {
   const payload = {
     lyricsOnline: dom.lyricsToggle.checked,
+    backgroundAudio:
+      dom.backgroundAudioToggle ? dom.backgroundAudioToggle.checked : state.backgroundAudioEnabled,
   };
   localStorage.setItem("jellyflow-preferences", JSON.stringify(payload));
 }
@@ -51,6 +53,10 @@ export function loadPreferences() {
   if (!source) {
     dom.lyricsToggle.checked = true;
     state.lyricsOnline = true;
+    if (dom.backgroundAudioToggle) {
+      dom.backgroundAudioToggle.checked = true;
+    }
+    state.backgroundAudioEnabled = true;
     return;
   }
   try {
@@ -58,11 +64,20 @@ export function loadPreferences() {
     const enabled = saved.lyricsOnline !== false;
     dom.lyricsToggle.checked = enabled;
     state.lyricsOnline = enabled;
+    const backgroundAudioEnabled = saved.backgroundAudio !== false;
+    if (dom.backgroundAudioToggle) {
+      dom.backgroundAudioToggle.checked = backgroundAudioEnabled;
+    }
+    state.backgroundAudioEnabled = backgroundAudioEnabled;
     if (!raw) {
       localStorage.setItem("jellyflow-preferences", JSON.stringify(saved));
     }
   } catch (error) {
     dom.lyricsToggle.checked = true;
     state.lyricsOnline = true;
+    if (dom.backgroundAudioToggle) {
+      dom.backgroundAudioToggle.checked = true;
+    }
+    state.backgroundAudioEnabled = true;
   }
 }

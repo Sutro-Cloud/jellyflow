@@ -17,6 +17,7 @@ export function initDom() {
     userSelect: document.getElementById("userSelect"),
     userIdInput: document.getElementById("userIdInput"),
     lyricsToggle: document.getElementById("lyricsToggle"),
+    backgroundAudioToggle: document.getElementById("backgroundAudioToggle"),
     rememberToggle: document.getElementById("rememberToggle"),
     loadUsersBtn: document.getElementById("loadUsersBtn"),
     connectBtn: document.getElementById("connectBtn"),

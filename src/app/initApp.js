@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+import { MediaSession as MediaSessionPlugin } from "@capgo/capacitor-media-session";
 import { dom } from "../modules/dom.js";
 import { state } from "../modules/state.js";
 import { loadSettings, loadPreferences, savePreferences } from "../modules/storage.js";
@@ -234,7 +236,20 @@ function setupEvents() {
     playTrack(context.album, nextTrack, nextIndex);
   };
 
+  const shouldUseNativeMediaSession = () =>
+    typeof Capacitor !== "undefined" &&
+    typeof Capacitor.isNativePlatform === "function" &&
+    Capacitor.isNativePlatform();
+
   const setMediaSessionHandler = (action, handler) => {
+    if (shouldUseNativeMediaSession()) {
+      try {
+        void MediaSessionPlugin.setActionHandler({ action }, handler);
+      } catch (error) {
+        // Ignore native media session errors.
+      }
+      return;
+    }
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) {
       return;
     }
@@ -454,6 +469,12 @@ function setupEvents() {
     }
     loadLyricsForTrack(state.currentTrack, state.currentAlbum);
   });
+  if (dom.backgroundAudioToggle) {
+    dom.backgroundAudioToggle.addEventListener("change", () => {
+      state.backgroundAudioEnabled = dom.backgroundAudioToggle.checked;
+      savePreferences();
+    });
+  }
   dom.themeToggle.addEventListener("click", () => {
     const nextTheme = document.body.classList.contains("theme-dark") ? "light" : "dark";
     applyTheme(nextTheme);
@@ -864,6 +885,16 @@ function setupEvents() {
       focusActiveCover();
       return;
     }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (state.backgroundAudioEnabled || !document.hidden) {
+      return;
+    }
+    if (!dom.audio || dom.audio.paused) {
+      return;
+    }
+    dom.audio.pause();
+    updateMediaSessionPosition();
   });
   dom.audio.addEventListener("ended", () => {
     void stepTrack(1);
