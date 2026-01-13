@@ -7,6 +7,25 @@ import { resetFavoriteState, syncFavoriteForTrack } from "./favorites.js";
 
 const supportsMediaSession = typeof navigator !== "undefined" && "mediaSession" in navigator;
 const supportsMediaMetadata = typeof MediaMetadata !== "undefined";
+const MAX_TITLE_LENGTH = 100;
+
+function buildNowPlayingTitle(album) {
+  const title = `${albumTitle(album)} / ${albumArtist(album)}`;
+  if (title.length <= MAX_TITLE_LENGTH) {
+    return title;
+  }
+  if (MAX_TITLE_LENGTH <= 3) {
+    return title.slice(0, MAX_TITLE_LENGTH);
+  }
+  return `${title.slice(0, MAX_TITLE_LENGTH - 3)}...`;
+}
+
+function setDocumentTitle(title) {
+  if (typeof document === "undefined") {
+    return;
+  }
+  document.title = title;
+}
 
 function buildArtwork(albumId) {
   if (!albumId) {
@@ -129,6 +148,7 @@ export function playTrack(album, track, index, options = {}) {
   loadLyricsForTrack(track, album);
   syncFavoriteForTrack(track);
   setMediaSessionMetadata(album, track);
+  setDocumentTitle(buildNowPlayingTitle(album));
   notifyNowPlayingChange();
 }
 
@@ -141,6 +161,7 @@ export function updateNowPlayingIdle() {
   dom.nowSub.textContent = isConnected ? "Waiting for track" : "Connect to start listening";
   resetFavoriteState();
   clearMediaSessionMetadata();
+  setDocumentTitle("Jellyflow");
 }
 
 export function toggleAudioPlayback() {

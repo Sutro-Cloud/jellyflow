@@ -1560,7 +1560,7 @@ dialog::backdrop {
   }
 
   .track {
-    padding: 8px 8px;
+    padding: 2px 8px;
   }
 
   .track-tail {
