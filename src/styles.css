@@ -1922,6 +1922,8 @@ dialog::backdrop {
 @media (max-width: 540px) and (orientation: portrait) {
   .player-left {
     align-items: stretch;
+    align-self: stretch;
+    width: 100%;
   }
 
   .now-playing {
@@ -1934,13 +1936,14 @@ dialog::backdrop {
 
   .player-controls-row {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
   .player-controls-row #audio {
     margin-left: 0;
+    align-self: flex-start;
     width: 100%;
-    min-width: 120px;
+    min-width: 100%;
   }
 
   .settings-menu-popover {
