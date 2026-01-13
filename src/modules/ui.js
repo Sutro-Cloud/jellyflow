@@ -1,8 +1,11 @@
 import { dom } from "./dom.js";
 
 export function setStatus(text, tone = "idle") {
-  dom.status.textContent = text;
+  const value = text || "";
+  dom.status.textContent = value;
   dom.status.dataset.tone = tone;
+  dom.status.classList.toggle("is-hidden", !value);
+  dom.status.setAttribute("aria-hidden", value ? "false" : "true");
 }
 
 export function createTrackButton({

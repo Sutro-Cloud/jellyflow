@@ -45,7 +45,7 @@ export async function connect() {
       dom.userIdInput.value = authedUserId;
       dom.passwordInput.value = "";
       await fetchJson(`/Users/${state.userId}`);
-      setStatus("Connected", "ok");
+      setStatus("", "idle");
       updateNowPlayingIdle();
       resetPlaylistState();
       if (dom.rememberToggle.checked) {
@@ -71,7 +71,7 @@ export async function connect() {
 
   try {
     await fetchJson(`/Users/${state.userId}`);
-    setStatus("Connected", "ok");
+    setStatus("", "idle");
     updateNowPlayingIdle();
     resetPlaylistState();
     if (dom.rememberToggle.checked) {

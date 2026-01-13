@@ -2,9 +2,6 @@ import { dom } from "./dom.js";
 import { state } from "./state.js";
 import { fetchItemUserData, setItemFavorite } from "./api.js";
 
-const FILLED_HEART = "\u2665";
-const OUTLINE_HEART = "\u2661";
-
 function canFavorite() {
   return Boolean(state.serverUrl && state.apiKey && state.userId);
 }
@@ -16,7 +13,6 @@ function setFavoriteButtonState({ enabled, isFavorite, busy }) {
   dom.favoriteToggle.disabled = !enabled || busy;
   dom.favoriteToggle.classList.toggle("is-active", Boolean(isFavorite));
   dom.favoriteToggle.setAttribute("aria-pressed", isFavorite ? "true" : "false");
-  dom.favoriteToggle.textContent = isFavorite ? FILLED_HEART : OUTLINE_HEART;
   dom.favoriteToggle.title = isFavorite ? "Unfavorite track" : "Favorite track";
 }
 

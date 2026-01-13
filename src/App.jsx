@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { FileText, Heart, List, Moon, Plug, Settings, Shuffle, Sun } from "lucide-react";
 import { initDom } from "./modules/dom.js";
 import { initApp } from "./app/initApp.js";
 
@@ -7,6 +8,7 @@ export default function App() {
   const showGithubLink = (import.meta.env.VITE_GITHUB_LINK_ENABLED || "").toLowerCase() === "true";
   const showBuyMeACoffee =
     (import.meta.env.VITE_BUYMEACOFFEE_ENABLED || "").toLowerCase() === "true";
+  const iconProps = { "aria-hidden": "true", strokeWidth: 1.8 };
 
   useEffect(() => {
     if (hasInit.current) {
@@ -102,6 +104,14 @@ export default function App() {
                 <div className="lyrics-title">Lyrics</div>
                 <div className="lyrics-status" id="lyricsStatus">No track playing</div>
               </div>
+              <button
+                className="icon panel-close"
+                id="lyricsPanelClose"
+                type="button"
+                aria-label="Close lyrics panel"
+              >
+                &times;
+              </button>
             </div>
             <div className="lyrics-viewport" id="lyricsViewport">
               <div className="lyrics-track" id="lyricsTrack">
@@ -124,6 +134,14 @@ export default function App() {
                 <div className="playlist-title" id="playlistTitle">Playlists</div>
                 <div className="playlist-status" id="playlistStatus">No playlists loaded</div>
               </div>
+              <button
+                className="icon panel-close"
+                id="playlistPanelClose"
+                type="button"
+                aria-label="Close playlists panel"
+              >
+                &times;
+              </button>
             </div>
             <div className="playlist-body">
               <div className="playlist-list" id="playlistList">
@@ -150,24 +168,66 @@ export default function App() {
               <div className="now-sub" id="nowSub">Connect to start listening</div>
             </div>
             <div className="now-actions">
-              <button
-                className="control-icon"
-                id="openSettings"
-                type="button"
-                aria-label="Settings"
-                title="Settings"
-              >
-                &#9881;
-              </button>
-              <button
-                className="control-icon"
-                id="themeToggle"
-                type="button"
-                aria-label="Toggle theme"
-                title="Toggle theme"
-              >
-                &#9789;
-              </button>
+              <div className="settings-menu" id="settingsMenuWrap">
+                <button
+                  className="control-icon"
+                  id="openSettings"
+                  type="button"
+                  aria-label="Open settings menu"
+                  aria-haspopup="menu"
+                  aria-expanded="false"
+                  aria-controls="settingsMenu"
+                  title="Open settings menu"
+                >
+                  <Settings className="icon" {...iconProps} />
+                </button>
+                <div className="settings-menu-popover" id="settingsMenu" role="menu" aria-hidden="true">
+                  <button
+                    className="settings-menu-item"
+                    id="openConnection"
+                    type="button"
+                    role="menuitem"
+                  >
+                    <Plug className="icon" {...iconProps} />
+                    <span>Connection</span>
+                  </button>
+                  <button
+                    className="settings-menu-item theme-toggle"
+                    id="themeToggle"
+                    type="button"
+                    role="menuitem"
+                    aria-label="Toggle theme"
+                  >
+                    <span className="menu-icon">
+                      <Sun className="icon icon-sun" {...iconProps} />
+                      <Moon className="icon icon-moon" {...iconProps} />
+                    </span>
+                    <span>Theme</span>
+                  </button>
+                  <button
+                    className="settings-menu-item"
+                    id="playlistPaneToggle"
+                    type="button"
+                    role="menuitem"
+                    aria-label="Toggle playlists panel"
+                    aria-expanded="false"
+                  >
+                    <List className="icon" {...iconProps} />
+                    <span>Playlists</span>
+                  </button>
+                  <button
+                    className="settings-menu-item"
+                    id="lyricsPaneToggle"
+                    type="button"
+                    role="menuitem"
+                    aria-label="Toggle lyrics panel"
+                    aria-expanded="false"
+                  >
+                    <FileText className="icon" {...iconProps} />
+                    <span>Lyrics</span>
+                  </button>
+                </div>
+              </div>
               <button
                 className="control-icon shuffle-toggle"
                 id="shuffleBtn"
@@ -175,7 +235,7 @@ export default function App() {
                 aria-label="Shuffle album and track"
                 title="Shuffle album and track"
               >
-                &#128256;
+                <Shuffle className="icon" {...iconProps} />
               </button>
               <button
                 className="control-icon favorite-toggle"
@@ -185,25 +245,7 @@ export default function App() {
                 aria-pressed="false"
                 title="Favorite track"
               >
-                &#9825;
-              </button>
-              <button
-                className="lyrics-toggle"
-                id="lyricsPaneToggle"
-                type="button"
-                aria-label="Toggle lyrics panel"
-                aria-expanded="false"
-              >
-                &#9834;
-              </button>
-              <button
-                className="playlist-toggle"
-                id="playlistPaneToggle"
-                type="button"
-                aria-label="Toggle playlists panel"
-                aria-expanded="false"
-              >
-                &#9776;
+                <Heart className="icon" {...iconProps} />
               </button>
               <button
                 className="control-icon player-collapse"

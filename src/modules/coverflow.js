@@ -716,7 +716,7 @@ export async function loadAlbumsPaginated() {
   setStatus("Loading albums...", "info");
   await loadAlbumWindow(0, 0);
   if (state.albums.length) {
-    setStatus("Connected", "ok");
+    setStatus("", "idle");
     updateNowPlayingIdle();
   }
 }

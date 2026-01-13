@@ -141,6 +141,10 @@ body::before {
   cursor: pointer;
 }
 
+.status.is-hidden {
+  display: none;
+}
+
 .status[data-tone="ok"] {
   background: rgba(31, 157, 139, 0.12);
   color: var(--mint);
@@ -320,9 +324,30 @@ body.theme-dark .buymeacoffee-link {
   flex-shrink: 0;
 }
 
+.lyrics-toggle .icon,
+.playlist-toggle .icon,
+.control-icon .icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  stroke-width: 1.8;
+}
+
 .lyrics-toggle,
 .playlist-toggle {
   position: relative;
+}
+
+.theme-toggle .icon-sun {
+  display: none;
+}
+
+.theme-toggle.is-active .icon-sun {
+  display: block;
+}
+
+.theme-toggle.is-active .icon-moon {
+  display: none;
 }
 
 .lyrics-toggle:hover,
@@ -339,6 +364,14 @@ body.theme-dark .buymeacoffee-link {
   background: rgba(226, 75, 75, 0.12);
   box-shadow: 0 0 0 2px rgba(226, 75, 75, 0.28);
   transform: translateY(-1px) scale(1.05);
+}
+
+.favorite-toggle .icon path {
+  fill: none;
+}
+
+.favorite-toggle.is-active .icon path {
+  fill: currentColor;
 }
 
 body.is-lyrics-open .lyrics-toggle {
@@ -733,6 +766,23 @@ body.is-playlist-open .playlist-toggle::after {
   gap: 12px;
 }
 
+.panel-close {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 12px;
+  background: var(--ghost);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+}
+
+.panel-close:hover {
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
 .lyrics-header-text {
   display: grid;
   gap: 4px;
@@ -1105,12 +1155,87 @@ body.is-playlist-open .playlist-toggle::after {
   flex-shrink: 0;
 }
 
-.now-actions .lyrics-toggle,
-.now-actions .playlist-toggle,
 .now-actions .control-icon {
   background: var(--control-bg);
   box-shadow: none;
   font-size: 1.1rem;
+}
+
+.settings-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.settings-menu-popover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  box-shadow: 0 16px 32px var(--shadow);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 5;
+}
+
+.settings-menu.is-open .settings-menu-popover {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.settings-menu-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.settings-menu-item .icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.settings-menu-item .menu-icon {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.settings-menu-item .menu-icon .icon {
+  grid-area: 1 / 1;
+}
+
+.settings-menu-item:hover {
+  background: var(--ghost);
+  transform: translateY(-1px);
+}
+
+.settings-menu-item.is-active {
+  background: rgba(47, 109, 246, 0.12);
+}
+
+body.theme-dark .settings-menu-item.is-active {
+  background: rgba(122, 167, 255, 0.18);
 }
 
 .player-collapse {
@@ -1412,8 +1537,6 @@ dialog::backdrop {
     --lyrics-rail: 44vw;
   }
 
-  .now-actions .lyrics-toggle,
-  .now-actions .playlist-toggle,
   .now-actions .control-icon {
     width: 44px;
     height: 44px;
@@ -1521,8 +1644,6 @@ dialog::backdrop {
     pointer-events: auto;
   }
 
-  .now-actions .lyrics-toggle,
-  .now-actions .playlist-toggle,
   .now-actions .control-icon {
     width: 48px;
     height: 48px;
@@ -1721,8 +1842,6 @@ dialog::backdrop {
     gap: 4px;
   }
 
-  .now-actions .lyrics-toggle,
-  .now-actions .playlist-toggle,
   .now-actions .control-icon {
     width: 40px;
     height: 40px;

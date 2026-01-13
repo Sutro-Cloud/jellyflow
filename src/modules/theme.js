@@ -5,7 +5,6 @@ export function applyTheme(theme, persist = true) {
   document.body.classList.toggle("theme-dark", isDark);
   dom.themeToggle.classList.toggle("is-active", isDark);
   const label = isDark ? "Switch to light mode" : "Switch to dark mode";
-  dom.themeToggle.textContent = isDark ? "\u2600" : "\u263e";
   dom.themeToggle.setAttribute("aria-label", label);
   dom.themeToggle.title = label;
   if (persist) {

@@ -33,39 +33,101 @@ import { initAnalytics } from "../modules/analytics.js";
 import { setStatus } from "../modules/ui.js";
 
 function setupEvents() {
-  dom.openSettings.addEventListener("click", () => {
-    dom.settingsDialog.showModal();
-  });
+  const setSettingsMenuOpen = (isOpen) => {
+    if (!dom.settingsMenuWrap || !dom.openSettings || !dom.settingsMenu) {
+      return;
+    }
+    dom.settingsMenuWrap.classList.toggle("is-open", isOpen);
+    dom.openSettings.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    dom.settingsMenu.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  };
+
+  const closeSettingsMenu = () => setSettingsMenuOpen(false);
+
+  const setLyricsPanelOpen = (isOpen) => {
+    if (!dom.coverflowSection) {
+      return;
+    }
+    dom.coverflowSection.classList.toggle("is-lyrics-open", isOpen);
+    document.body.classList.toggle("is-lyrics-open", isOpen);
+    if (dom.lyricsPaneToggle) {
+      dom.lyricsPaneToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      dom.lyricsPaneToggle.classList.toggle("is-active", isOpen);
+    }
+    if (isOpen) {
+      setPlaylistPanelOpen(false);
+    }
+  };
+
+  const setPlaylistPanelOpen = (isOpen) => {
+    if (!dom.coverflowSection) {
+      return;
+    }
+    dom.coverflowSection.classList.toggle("is-playlist-open", isOpen);
+    document.body.classList.toggle("is-playlist-open", isOpen);
+    if (dom.playlistPaneToggle) {
+      dom.playlistPaneToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      dom.playlistPaneToggle.classList.toggle("is-active", isOpen);
+    }
+    if (isOpen) {
+      setLyricsPanelOpen(false);
+      setPlaylistView("list");
+      if (!state.playlists.length && !state.playlistsLoading) {
+        void loadPlaylists();
+      }
+    }
+  };
+
+  if (dom.openSettings && dom.settingsMenuWrap) {
+    dom.openSettings.addEventListener("click", () => {
+      const isOpen = dom.settingsMenuWrap.classList.contains("is-open");
+      setSettingsMenuOpen(!isOpen);
+    });
+  }
+  if (dom.settingsMenuWrap) {
+    document.addEventListener("click", (event) => {
+      if (!dom.settingsMenuWrap.classList.contains("is-open")) {
+        return;
+      }
+      if (dom.settingsMenuWrap.contains(event.target)) {
+        return;
+      }
+      closeSettingsMenu();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeSettingsMenu();
+      }
+    });
+  }
+  if (dom.openConnection) {
+    dom.openConnection.addEventListener("click", () => {
+      closeSettingsMenu();
+      dom.settingsDialog.showModal();
+    });
+  }
   if (dom.lyricsPaneToggle && dom.coverflowSection) {
     dom.lyricsPaneToggle.addEventListener("click", () => {
-      const isOpen = dom.coverflowSection.classList.toggle("is-lyrics-open");
-      document.body.classList.toggle("is-lyrics-open", isOpen);
-      dom.lyricsPaneToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      if (isOpen) {
-        dom.coverflowSection.classList.remove("is-playlist-open");
-        document.body.classList.remove("is-playlist-open");
-        if (dom.playlistPaneToggle) {
-          dom.playlistPaneToggle.setAttribute("aria-expanded", "false");
-        }
-      }
+      const isOpen = !dom.coverflowSection.classList.contains("is-lyrics-open");
+      setLyricsPanelOpen(isOpen);
+      closeSettingsMenu();
     });
   }
   if (dom.playlistPaneToggle && dom.coverflowSection) {
     dom.playlistPaneToggle.addEventListener("click", () => {
-      const isOpen = dom.coverflowSection.classList.toggle("is-playlist-open");
-      document.body.classList.toggle("is-playlist-open", isOpen);
-      dom.playlistPaneToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      if (isOpen) {
-        dom.coverflowSection.classList.remove("is-lyrics-open");
-        document.body.classList.remove("is-lyrics-open");
-        if (dom.lyricsPaneToggle) {
-          dom.lyricsPaneToggle.setAttribute("aria-expanded", "false");
-        }
-        setPlaylistView("list");
-        if (!state.playlists.length && !state.playlistsLoading) {
-          void loadPlaylists();
-        }
-      }
+      const isOpen = !dom.coverflowSection.classList.contains("is-playlist-open");
+      setPlaylistPanelOpen(isOpen);
+      closeSettingsMenu();
+    });
+  }
+  if (dom.lyricsPanelClose) {
+    dom.lyricsPanelClose.addEventListener("click", () => {
+      setLyricsPanelOpen(false);
+    });
+  }
+  if (dom.playlistPanelClose) {
+    dom.playlistPanelClose.addEventListener("click", () => {
+      setPlaylistPanelOpen(false);
     });
   }
   if (dom.playlistBack) {
@@ -88,17 +150,20 @@ function setupEvents() {
   });
   if (dom.status) {
     dom.status.addEventListener("click", () => {
+      closeSettingsMenu();
       dom.settingsDialog.showModal();
     });
     dom.status.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
+        closeSettingsMenu();
         dom.settingsDialog.showModal();
       }
     });
   }
   if (dom.connectSplashBtn) {
     dom.connectSplashBtn.addEventListener("click", () => {
+      closeSettingsMenu();
       dom.settingsDialog.showModal();
     });
   }
@@ -116,6 +181,7 @@ function setupEvents() {
   dom.themeToggle.addEventListener("click", () => {
     const nextTheme = document.body.classList.contains("theme-dark") ? "light" : "dark";
     applyTheme(nextTheme);
+    closeSettingsMenu();
   });
   if (dom.shuffleBtn) {
     dom.shuffleBtn.addEventListener("click", () => {
