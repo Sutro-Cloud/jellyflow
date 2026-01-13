@@ -1043,7 +1043,7 @@ body.is-playlist-open .playlist-toggle::after {
 .track {
   display: grid;
   grid-template-columns: 32px 1fr auto;
-  gap: 10px;
+  gap: 2px;
   align-items: center;
   padding: 10px 12px;
   border-radius: 14px;
@@ -1516,6 +1516,11 @@ dialog::backdrop {
 }
 
 @media (max-width: 640px) {
+  :root {
+    --audio-width: min(240px, 55vw);
+    --audio-max-width: 260px;
+  }
+
   .coverflow-stage {
     min-height: 320px;
   }
@@ -1550,6 +1555,12 @@ dialog::backdrop {
     font-size: 1.35rem;
   }
 
+  .now-info {
+    min-width: 180px;
+    max-width: 180px;
+    flex: 0 0 180px;
+  }
+
   .tracklist {
     gap: 8px;
     padding-right: 0;
@@ -1570,8 +1581,8 @@ dialog::backdrop {
 
 @media (max-width: 540px) {
   :root {
-    --audio-width: min(160px, 38vw);
-    --audio-max-width: 180px;
+    --audio-width: min(200px, 55vw);
+    --audio-max-width: 240px;
   }
 
   body {
@@ -1967,7 +1978,7 @@ dialog::backdrop {
   }
 
   .track {
-    padding: 6px 8px;
+    padding: 4px 8px;
     grid-template-columns: 1fr;
   }
 
