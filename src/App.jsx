@@ -103,6 +103,7 @@ export default function App() {
                   Connect to server
                 </button>
                 <div className="coverflow-empty-icon" id="coverflowEmptyIcon">&#9881;</div>
+                <div className="coverflow-loading" aria-hidden="true"></div>
                 <div className="coverflow-empty-title" id="coverflowEmptyTitle"></div>
                 <div className="coverflow-empty-sub" id="coverflowEmptySub"></div>
               </div>

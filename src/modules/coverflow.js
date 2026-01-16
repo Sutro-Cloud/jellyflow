@@ -433,7 +433,9 @@ async function animateToIndex(targetIndex, options = {}) {
 
 function updateAlbumMeta() {
   if (!state.albums.length) {
-    dom.albumLine.textContent = state.serverUrl ? "No albums found" : "";
+    dom.albumLine.textContent = state.serverUrl
+      ? (state.isLoadingAlbums ? "" : "No albums found")
+      : "";
     updateAlbumCount();
     updateCoverflowEmpty();
     return;
@@ -460,12 +462,14 @@ function updateCoverflowEmpty() {
     dom.coverflowEmpty.classList.remove("is-visible");
     dom.coverflowEmpty.classList.remove("is-brand");
     dom.coverflowEmpty.classList.remove("is-brand-only");
+    dom.coverflowEmpty.classList.remove("is-loading");
     return;
   }
   dom.coverflowEmpty.classList.add("is-brand");
   dom.coverflowEmpty.classList.add("is-brand-only");
   if (isConnected) {
     dom.coverflowEmptyIcon.textContent = "\u266a";
+    dom.coverflowEmpty.classList.toggle("is-loading", Boolean(state.isLoadingAlbums));
     if (state.isLoadingAlbums) {
       dom.coverflowEmptyTitle.textContent = "Loading albums";
       dom.coverflowEmptySub.textContent = "Fetching your Jellyfin library.";
@@ -477,6 +481,7 @@ function updateCoverflowEmpty() {
     dom.coverflowEmptyIcon.textContent = "\u2699";
     dom.coverflowEmptyTitle.textContent = "";
     dom.coverflowEmptySub.textContent = "";
+    dom.coverflowEmpty.classList.remove("is-loading");
   }
   dom.coverflowEmpty.classList.add("is-visible");
 }
@@ -569,6 +574,7 @@ async function shiftAlbumWindow(direction, targetAbsIndex) {
 async function loadAlbumWindow(startIndex, focusIndex = 0, guard = null, focusAbsIndex = null) {
   const token = ++state.loadToken;
   state.isLoadingAlbums = true;
+  updateCoverflowEmpty();
   state.openAlbumId = null;
   state.trackFocusIndex = null;
   state.trackFocusAlbumId = null;
@@ -609,6 +615,7 @@ async function loadAlbumWindow(startIndex, focusIndex = 0, guard = null, focusAb
   } finally {
     if (token === state.loadToken) {
       state.isLoadingAlbums = false;
+      updateCoverflowEmpty();
       void prefetchWindow("ahead");
       void prefetchWindow("behind");
       maybePrefetchWindow();
@@ -712,8 +719,8 @@ export function syncTrackHighlights() {
 }
 
 export async function loadAlbumsPaginated() {
+  state.isLoadingAlbums = true;
   resetLibraryState();
-  setStatus("Loading albums...", "info");
   await loadAlbumWindow(0, 0);
   if (state.albums.length) {
     setStatus("", "idle");
