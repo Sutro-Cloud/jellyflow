@@ -38,8 +38,15 @@ const albumFlipLock = {
 };
 const COVER_IMAGE_DEFAULT = 600;
 const COVER_IMAGE_SMALL = 420;
+const COVER_IMAGE_PORTRAIT_IOS = 320;
+const isPortrait =
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(orientation: portrait)").matches;
 const coverImageSize =
-  IS_IOS || IS_SMALL_VIEWPORT ? COVER_IMAGE_SMALL : COVER_IMAGE_DEFAULT;
+  IS_IOS && isPortrait
+    ? COVER_IMAGE_PORTRAIT_IOS
+    : (IS_IOS || IS_SMALL_VIEWPORT ? COVER_IMAGE_SMALL : COVER_IMAGE_DEFAULT);
 
 function clearSafariNearClasses() {
   if (!dom.coverflowTrack) {
@@ -430,7 +437,9 @@ function updateCoverflow() {
     const isOpen = albumId && albumId === state.openAlbumId;
     item.classList.toggle("is-open", isOpen);
     item.classList.toggle("is-flipping", isAlbumFlipLocked(albumId));
-    const allowReflection = absOffset <= 3 && (!IS_SMALL_VIEWPORT || IS_IOS);
+    const allowReflection =
+      absOffset <= 3 &&
+      (!IS_SMALL_VIEWPORT || (IS_IOS && !isPortrait));
     item.classList.toggle("with-reflection", allowReflection);
     item.style.zIndex = isOpen ? "200" : (100 - Math.abs(offset)).toString();
     const isHidden = absOffset > maxVisibleOffset;
