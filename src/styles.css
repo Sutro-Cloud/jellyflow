@@ -19,6 +19,8 @@
   --accent-dark: #1f57d6;
   --mint: #1f9d8b;
   --control-bg: rgba(20, 20, 20, 0.18);
+  --control-outline: #111111;
+  --control-ink: #111111;
   --tracklist-border: #3a3a3a;
   --audio-width: min(560px, 55vw);
   --audio-max-width: 400px;
@@ -51,6 +53,8 @@ body.theme-dark {
   --accent-dark: #2f6df6;
   --mint: #4bc3a5;
   --control-bg: rgba(255, 255, 255, 0.18);
+  --control-outline: #ffffff;
+  --control-ink: #ffffff;
   --tracklist-border: #3a3a3a;
   --shadow: rgba(0, 0, 0, 0.45);
   --shadow-strong: rgba(0, 0, 0, 0.7);
@@ -313,9 +317,9 @@ body.theme-dark .buymeacoffee-link {
   width: 40px;
   height: 40px;
   border-radius: 14px;
-  border: 1px solid var(--field-border);
-  background: var(--ghost);
-  color: var(--muted);
+  border: none;
+  background: transparent;
+  color: var(--control-ink);
   box-shadow: none;
   display: grid;
   place-items: center;
@@ -356,24 +360,19 @@ body.theme-dark .buymeacoffee-link {
 .playlist-toggle:hover,
 .control-icon:hover {
   transform: translateY(-1px);
-  color: var(--ink);
-  border-color: var(--panel-border);
+  color: var(--control-ink);
 }
 
 .favorite-toggle.is-active {
   color: #e24b4b;
-  border-color: rgba(226, 75, 75, 0.55);
-  background: rgba(226, 75, 75, 0.12);
-  box-shadow: 0 0 0 2px rgba(226, 75, 75, 0.28);
-  transform: translateY(-1px) scale(1.05);
+  background: transparent;
+  box-shadow: none;
 }
 
 .shuffle-toggle.is-active {
-  color: #fff;
-  border-color: var(--selection);
-  background: var(--selection);
-  box-shadow: 0 0 0 2px rgba(47, 109, 246, 0.35);
-  transform: translateY(-1px) scale(1.05);
+  color: var(--selection);
+  background: transparent;
+  box-shadow: none;
 }
 
 .favorite-toggle .icon path {
@@ -815,7 +814,7 @@ body.is-playlist-open .playlist-toggle::after {
   transform: translateX(110%);
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.35s ease;
-  z-index: 3;
+  z-index: 6;
 }
 
 .coverflow-section.is-lyrics-open .lyrics-panel {
@@ -930,7 +929,7 @@ body.is-playlist-open .playlist-toggle::after {
   transform: translateX(110%);
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.35s ease;
-  z-index: 3;
+  z-index: 6;
 }
 
 .coverflow-section.is-playlist-open .playlist-panel {
@@ -1353,7 +1352,6 @@ body.is-audio-paused .track.is-playing .track-playing i {
 }
 
 .now-actions .control-icon {
-  background: var(--control-bg);
   box-shadow: none;
   font-size: 1.1rem;
 }
@@ -2024,6 +2022,23 @@ body.is-typeahead-open .typeahead-input {
 
 @media (max-width: 540px) and (orientation: portrait) {
   .coverflow-section {
+    --lyrics-rail: min(92vw, 360px);
+    --playlist-rail: min(92vw, 360px);
+  }
+
+  .lyrics-panel,
+  .playlist-panel {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) scale(0.98);
+  }
+
+  .coverflow-section.is-lyrics-open .lyrics-panel,
+  .coverflow-section.is-playlist-open .playlist-panel {
+    transform: translateX(-50%) scale(1);
+  }
+
+  .coverflow-section {
     --cover-size: 300px;
     --album-line-offset: 12px;
   }
@@ -2094,6 +2109,7 @@ body.is-typeahead-open .typeahead-input {
 
   .coverflow-stage {
     min-height: 200px;
+    margin-top: 7px;
   }
 
   .coverflow-item {
