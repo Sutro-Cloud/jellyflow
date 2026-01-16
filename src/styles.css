@@ -1081,6 +1081,7 @@ body.is-playlist-open .playlist-toggle::after {
   transform: translateX(-50%);
   font-size: 1rem;
   font-weight: 600;
+  color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
