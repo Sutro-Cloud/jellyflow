@@ -52,9 +52,11 @@ function setupEvents() {
 
   const closeSettingsMenu = () => setSettingsMenuOpen(false);
 
-  const applyTypeaheadQuery = (rawQuery) => {
+  const applyTypeaheadQuery = (rawQuery, options = {}) => {
+    const { preserveFocus = false } = options;
     const isTypeaheadFocused =
-      typeof document !== "undefined" && document.activeElement === dom.typeaheadInput;
+      preserveFocus ||
+      (typeof document !== "undefined" && document.activeElement === dom.typeaheadInput);
     if (state.openAlbumId) {
       closeOpenAlbum();
       if (!isTypeaheadFocused) {
@@ -434,7 +436,7 @@ function setupEvents() {
   }
   if (dom.typeaheadInput) {
     dom.typeaheadInput.addEventListener("input", (event) => {
-      applyTypeaheadQuery(event.target.value);
+      applyTypeaheadQuery(event.target.value, { preserveFocus: true });
     });
     dom.typeaheadInput.addEventListener("focus", () => {
       document.body.classList.add("is-typeahead-open");

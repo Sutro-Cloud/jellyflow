@@ -1921,7 +1921,7 @@ body.is-typeahead-open .typeahead-input {
   }
 
   #audio {
-    min-width: 120px;
+    min-width: 200px;
     align-self: center;
     pointer-events: auto;
   }
