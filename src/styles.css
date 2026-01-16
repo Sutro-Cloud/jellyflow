@@ -2011,6 +2011,15 @@ body.is-typeahead-open .typeahead-input {
 }
 
 @media (max-width: 540px) and (orientation: portrait) {
+  .coverflow-section {
+    --cover-size: 300px;
+    --album-line-offset: 12px;
+  }
+
+  .coverflow-stage {
+    min-height: 430px;
+  }
+
   .main {
     padding-bottom: calc(140px + env(safe-area-inset-bottom));
   }
