@@ -1078,7 +1078,7 @@ body.is-playlist-open .playlist-toggle::after {
 .album-line {
   position: absolute;
   left: 50%;
-  top: calc(50% + (var(--cover-size) * 0.5) + var(--album-line-offset));
+  top: calc(50% + (var(--cover-size) * 0.5) + var(--album-line-offset) + 10px);
   transform: translateX(-50%);
   font-size: 1rem;
   font-weight: 600;
@@ -1757,6 +1757,12 @@ body.is-typeahead-open .typeahead-input {
     }
   }
 
+  .coverflow-track.is-safari .coverflow-item {
+    --cover-spacing: 160px;
+    --cover-depth: -95px;
+    --cover-tilt: -18deg;
+  }
+
   .coverflow-section {
     --cover-size: 230px;
     --album-line-offset: 12px;
@@ -2097,6 +2103,12 @@ body.is-typeahead-open .typeahead-input {
       --cover-depth: -95px;
       --cover-tilt: -18deg;
     }
+  }
+
+  .coverflow-track.is-safari .coverflow-item {
+    --cover-spacing: 160px;
+    --cover-depth: -95px;
+    --cover-tilt: -18deg;
   }
 
   .album-line {
