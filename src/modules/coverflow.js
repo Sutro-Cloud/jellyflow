@@ -17,7 +17,10 @@ const isSafari =
   typeof navigator !== "undefined" &&
   /safari/i.test(navigator.userAgent) &&
   !/chrome|crios|android/i.test(navigator.userAgent);
-const SAFARI_WILL_CHANGE_TIMEOUT = 450;
+const SAFARI_WILL_CHANGE_TIMEOUT = 1600;
+// Keep these in sync with .coverflow-item.is-open in styles.css.
+const SAFARI_OPEN_LIFT = 70;
+const SAFARI_OPEN_SCALE = 1.08;
 const ALBUM_WINDOW_BUFFER = 3;
 const ALBUM_PREFETCH_THRESHOLD = 12;
 const MAX_LOADED_COUNT =
@@ -363,14 +366,28 @@ function updateAlbumCount() {
 }
 
 function updateCoverflow() {
+  if (dom.coverflowTrack) {
+    dom.coverflowTrack.classList.toggle("is-safari", isSafari);
+  }
   const items = Array.from(dom.coverflowTrack.children);
+  const maxVisibleOffset = isSafari ? 5 : 5;
+  let safariMetrics = null;
+  if (isSafari && items.length) {
+    const sampleStyle = getComputedStyle(items[0]);
+    const spacing = parseFloat(sampleStyle.getPropertyValue("--cover-spacing"));
+    const depth = parseFloat(sampleStyle.getPropertyValue("--cover-depth"));
+    const tilt = parseFloat(sampleStyle.getPropertyValue("--cover-tilt"));
+    safariMetrics = {
+      spacing: Number.isFinite(spacing) ? spacing : 300,
+      depth: Number.isFinite(depth) ? depth : -190,
+      tilt: Number.isFinite(tilt) ? tilt : -24,
+    };
+  }
   items.forEach((item, index) => {
     const offset = index - state.activeIndex;
     const absOffset = Math.abs(offset);
-    const nearRange = isSafari ? 1 : 2;
+    const nearRange = 2;
     const shouldHintNear = absOffset <= nearRange && (!isSafari || safariWillChangeBoost);
-    item.style.setProperty("--offset", offset.toString());
-    item.style.setProperty("--abs", absOffset.toString());
     item.classList.toggle("is-active", index === state.activeIndex);
     item.classList.toggle("is-near", shouldHintNear);
     const albumId = item.dataset.albumId;
@@ -379,7 +396,23 @@ function updateCoverflow() {
     const allowReflection = absOffset <= 3 && (!IS_SMALL_VIEWPORT || IS_IOS);
     item.classList.toggle("with-reflection", allowReflection);
     item.style.zIndex = isOpen ? "200" : (100 - Math.abs(offset)).toString();
-    item.style.opacity = Math.abs(offset) > 5 ? "0" : "1";
+    const isHidden = absOffset > maxVisibleOffset;
+    item.style.opacity = isHidden ? "0" : "1";
+    item.style.visibility = isHidden ? "hidden" : "visible";
+    if (safariMetrics) {
+      const lift = isOpen ? SAFARI_OPEN_LIFT : 0;
+      const scale = isOpen ? SAFARI_OPEN_SCALE : 1;
+      const translateX = offset * safariMetrics.spacing;
+      const translateZ = absOffset * safariMetrics.depth + lift;
+      const rotateY = offset * safariMetrics.tilt;
+      item.style.transform =
+        `translate(-50%, -50%) translate3d(${translateX}px, 0px, ${translateZ}px) ` +
+        `rotateY(${rotateY}deg) scale(${scale})`;
+    } else {
+      item.style.setProperty("--offset", offset.toString());
+      item.style.setProperty("--abs", absOffset.toString());
+      item.style.transform = "";
+    }
   });
 
   if (dom.coverflowSection) {
