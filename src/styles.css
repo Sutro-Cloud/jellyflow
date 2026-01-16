@@ -1706,6 +1706,12 @@ dialog::backdrop {
   z-index: 7;
 }
 
+@supports (-webkit-touch-callout: none) {
+  .typeahead-input {
+    font-size: 16px;
+  }
+}
+
 .typeahead.is-active {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
@@ -2167,7 +2173,7 @@ body.is-typeahead-open .typeahead-input {
   }
 
   #audio {
-    min-width: 110px;
+    min-width: 300px;
     align-self: center;
   }
 
