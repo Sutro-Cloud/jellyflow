@@ -633,7 +633,7 @@ body.is-playlist-open .playlist-toggle::after {
 }
 
 .coverflow-item.is-open .coverflow-card {
-  border: 4px solid var(--tracklist-border);
+  border: 2px solid var(--tracklist-border);
   transform: translateZ(0) rotateY(180deg);
 }
 
@@ -685,7 +685,7 @@ body.is-playlist-open .playlist-toggle::after {
   }
 
   .coverflow-item.is-open .coverflow-card {
-    border: 4px solid var(--tracklist-border);
+    border: 2px solid var(--tracklist-border);
     transform: translateZ(0) rotateY(180deg);
   }
 
@@ -786,7 +786,7 @@ body.is-playlist-open .playlist-toggle::after {
   background: transparent;
   border: none;
   border-top: 1px solid var(--panel-border);
-  padding: 12px 14px;
+  padding: 12px 16px;
 }
 
 .coverflow-back .track:first-child {
@@ -1775,6 +1775,14 @@ body.is-typeahead-open .typeahead-input {
     --lyrics-rail: 44vw;
   }
 
+  .coverflow-back-title .title {
+    font-size: 0.75rem;
+  }
+
+  .coverflow-back-title .subtitle {
+    font-size: 0.6rem;
+  }
+
   .now-actions .control-icon {
     width: 44px;
     height: 44px;
@@ -1791,6 +1799,22 @@ body.is-typeahead-open .typeahead-input {
   .tracklist {
     gap: 8px;
     padding-right: 0;
+  }
+
+  .track span {
+    font-size: 0.65rem;
+  }
+
+  .track .track-title {
+    font-size: 0.7rem;
+  }
+
+  .track-tail span {
+    font-size: 0.7rem;
+  }
+
+  .track .track-meta {
+    font-size: 0.6rem;
   }
 
   .coverflow-back .tracklist {
@@ -1854,6 +1878,14 @@ body.is-typeahead-open .typeahead-input {
 
   .album-line {
     font-size: 0.95rem;
+  }
+
+  .coverflow-back-title .title {
+    font-size: 0.7rem;
+  }
+
+  .coverflow-back-title .subtitle {
+    font-size: 0.55rem;
   }
 
 
@@ -1978,20 +2010,24 @@ body.is-typeahead-open .typeahead-input {
   }
 
   .coverflow-back .track {
-    padding-left: 6px;
-    padding-right: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   .track span {
-    font-size: 12px;
+    font-size: 8px;
   }
 
-  .track span:first-child,
-  .track span:last-child {
-    display: none;
+  .track .track-title {
+    font-size: 9px;
   }
 
-  .track-favorite {
+  .track-tail span {
+    font-size: 9px;
+  }
+
+  .track > span:first-child,
+  .track-tail span:last-child {
     display: none;
   }
 
@@ -2003,7 +2039,7 @@ body.is-typeahead-open .typeahead-input {
 
   .track .track-meta {
     display: block;
-    font-size: 10px;
+    font-size: 7px;
   }
 
   .playlist-entry {
@@ -2137,6 +2173,14 @@ body.is-typeahead-open .typeahead-input {
     font-size: 0.9rem;
   }
 
+  .coverflow-back-title .title {
+    font-size: 0.7rem;
+  }
+
+  .coverflow-back-title .subtitle {
+    font-size: 0.55rem;
+  }
+
 
   .player {
     padding: 10px 16px 12px;
@@ -2240,20 +2284,24 @@ body.is-typeahead-open .typeahead-input {
   }
 
   .coverflow-back .track {
-    padding-left: 4px;
-    padding-right: 4px;
+    padding-left: 6px;
+    padding-right: 6px;
   }
 
   .track span {
-    font-size: 11px;
+    font-size: 8px;
   }
 
-  .track span:first-child,
-  .track span:last-child {
-    display: none;
+  .track .track-title {
+    font-size: 9px;
   }
 
-  .track-favorite {
+  .track-tail span {
+    font-size: 9px;
+  }
+
+  .track > span:first-child,
+  .track-tail span:last-child {
     display: none;
   }
 
@@ -2265,7 +2313,7 @@ body.is-typeahead-open .typeahead-input {
 
   .track .track-meta {
     display: block;
-    font-size: 10px;
+    font-size: 7px;
   }
 
   .playlist-entry {
