@@ -2,7 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta
       name="description"
       content="Jellyflow is a free music explorer that connects to your Jellyfin server so you can browse, rediscover, and play your library in a fun, visual way."
@@ -31,5 +33,13 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <style>
+      .main-page.bubble-element.Page {
+      padding-top: 0px;
+      }
+      .bubble-element.FloatingGroup.floating-group {
+      padding-top: 0px;
+      }
+      </style> 
   </body>
 </html>
