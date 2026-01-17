@@ -2128,8 +2128,8 @@ body.is-typeahead-open .typeahead-input {
 
 @media (max-height: 520px) and (orientation: landscape) {
   :root {
-    --audio-width: min(150px, 36vw);
-    --audio-max-width: 170px;
+    --audio-width: min(320px, 60vw);
+    --audio-max-width: 360px;
   }
 
   .main {
@@ -2234,7 +2234,8 @@ body.is-typeahead-open .typeahead-input {
   }
 
   #audio {
-    min-width: 300px;
+    min-width: 320px;
+    max-width: 100%;
     align-self: center;
   }
 
