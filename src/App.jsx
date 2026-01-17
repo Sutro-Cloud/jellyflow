@@ -6,6 +6,8 @@ import {
   Heart,
   Image,
   List,
+  Pause,
+  Play,
   Moon,
   Plug,
   Search,
@@ -276,6 +278,17 @@ export default function App() {
                 title="Previous track"
               >
                 <SkipBack className="icon" {...iconProps} />
+              </button>
+              <button
+                className="control-icon play-toggle"
+                id="playPauseBtn"
+                type="button"
+                aria-label="Play"
+                aria-pressed="false"
+                title="Play"
+              >
+                <Play className="icon icon-play" {...iconProps} />
+                <Pause className="icon icon-pause" {...iconProps} />
               </button>
               <button
                 className="control-icon"

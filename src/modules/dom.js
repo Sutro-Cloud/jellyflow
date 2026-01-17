@@ -25,6 +25,7 @@ export function initDom() {
     themeToggle: document.getElementById("themeToggle"),
     albumBackgroundToggle: document.getElementById("albumBackgroundToggle"),
     prevTrackBtn: document.getElementById("prevTrackBtn"),
+    playPauseBtn: document.getElementById("playPauseBtn"),
     nextTrackBtn: document.getElementById("nextTrackBtn"),
     shuffleBtn: document.getElementById("shuffleBtn"),
     favoriteToggle: document.getElementById("favoriteToggle"),

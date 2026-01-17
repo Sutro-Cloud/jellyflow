@@ -509,6 +509,11 @@ function setupEvents() {
       void stepTrack(-1);
     });
   }
+  if (dom.playPauseBtn) {
+    dom.playPauseBtn.addEventListener("click", () => {
+      toggleAudioPlayback();
+    });
+  }
   if (dom.nextTrackBtn) {
     dom.nextTrackBtn.addEventListener("click", () => {
       void stepTrack(1);
@@ -519,6 +524,15 @@ function setupEvents() {
       void toggleFavoriteForCurrentTrack();
     });
   }
+  const setPlayPauseState = (isPlaying) => {
+    if (!dom.playPauseBtn) {
+      return;
+    }
+    dom.playPauseBtn.setAttribute("aria-pressed", isPlaying ? "true" : "false");
+    const label = isPlaying ? "Pause" : "Play";
+    dom.playPauseBtn.setAttribute("aria-label", label);
+    dom.playPauseBtn.title = label;
+  };
   const setPlayerCollapsed = (isCollapsed) => {
     if (!dom.playerFooter) {
       return;
@@ -959,10 +973,12 @@ function setupEvents() {
     setMediaSessionPlaybackState("playing");
     registerMediaSessionHandlers();
     document.body.classList.remove("is-audio-paused");
+    setPlayPauseState(true);
   });
   dom.audio.addEventListener("pause", () => {
     setMediaSessionPlaybackState("paused");
     document.body.classList.add("is-audio-paused");
+    setPlayPauseState(false);
   });
   dom.nowCover.addEventListener("click", () => {
     if (state.nowPlaying?.albumId) {
@@ -981,6 +997,7 @@ function setupEvents() {
 
   if (dom.audio) {
     document.body.classList.toggle("is-audio-paused", dom.audio.paused);
+    setPlayPauseState(!dom.audio.paused);
   }
 }
 

@@ -373,6 +373,22 @@ body.theme-dark .buymeacoffee-link {
   display: none;
 }
 
+.play-toggle .icon-play {
+  display: none;
+}
+
+.play-toggle .icon-pause {
+  display: block;
+}
+
+body.is-audio-paused .play-toggle .icon-play {
+  display: block;
+}
+
+body.is-audio-paused .play-toggle .icon-pause {
+  display: none;
+}
+
 .lyrics-toggle:hover,
 .playlist-toggle:hover,
 .control-icon:hover {
