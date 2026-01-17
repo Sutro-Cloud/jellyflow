@@ -2112,6 +2112,7 @@ body.is-typeahead-open .typeahead-input {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
+    transform: translateY(-20px);
   }
 
 }
@@ -2237,6 +2238,7 @@ body.is-typeahead-open .typeahead-input {
     min-width: 360px;
     max-width: 100%;
     align-self: center;
+    transform: translateY(-10px);
   }
 
   .status {
