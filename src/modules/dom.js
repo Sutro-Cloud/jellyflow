@@ -23,6 +23,7 @@ export function initDom() {
     connectBtn: document.getElementById("connectBtn"),
     resetBtn: document.getElementById("resetBtn"),
     themeToggle: document.getElementById("themeToggle"),
+    albumBackgroundToggle: document.getElementById("albumBackgroundToggle"),
     prevTrackBtn: document.getElementById("prevTrackBtn"),
     nextTrackBtn: document.getElementById("nextTrackBtn"),
     shuffleBtn: document.getElementById("shuffleBtn"),

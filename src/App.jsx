@@ -4,6 +4,7 @@ import {
   ChevronUp,
   FileText,
   Heart,
+  Image,
   List,
   Moon,
   Plug,
@@ -231,6 +232,17 @@ export default function App() {
                       <Moon className="icon icon-moon" {...iconProps} />
                     </span>
                     <span>Theme</span>
+                  </button>
+                  <button
+                    className="settings-menu-item"
+                    id="albumBackgroundToggle"
+                    type="button"
+                    role="menuitem"
+                    aria-label="Toggle album background"
+                    aria-pressed="false"
+                  >
+                    <Image className="icon" {...iconProps} />
+                    <span>Album background</span>
                   </button>
                   <button
                     className="settings-menu-item"

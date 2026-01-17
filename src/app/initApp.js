@@ -3,7 +3,14 @@ import { MediaSession as MediaSessionPlugin } from "@capgo/capacitor-media-sessi
 import { dom } from "../modules/dom.js";
 import { state } from "../modules/state.js";
 import { loadSettings, loadPreferences, savePreferences } from "../modules/storage.js";
-import { applyTheme, initTheme } from "../modules/theme.js";
+import {
+  applyTheme,
+  initAlbumBackground,
+  initTheme,
+  isAlbumBackgroundEnabled,
+  setAlbumBackgroundEnabled,
+  syncAlbumBackground,
+} from "../modules/theme.js";
 import { connect, loadUsers, resetForm } from "../modules/connection.js";
 import {
   clearTypeahead,
@@ -482,6 +489,12 @@ function setupEvents() {
     applyTheme(nextTheme);
     closeSettingsMenu();
   });
+  if (dom.albumBackgroundToggle) {
+    dom.albumBackgroundToggle.addEventListener("click", () => {
+      setAlbumBackgroundEnabled(!isAlbumBackgroundEnabled());
+      closeSettingsMenu();
+    });
+  }
   if (dom.shuffleBtn) {
     dom.shuffleBtn.addEventListener("click", () => {
       const nextMode = !state.shuffleMode;
@@ -975,6 +988,7 @@ export function initApp() {
   loadSettings();
   loadPreferences();
   initTheme();
+  initAlbumBackground();
   initAds();
   initAnalytics();
   setupEvents();
@@ -982,6 +996,7 @@ export function initApp() {
 
   onNowPlayingChange(syncTrackHighlights);
   onNowPlayingChange(syncPlaylistHighlights);
+  onNowPlayingChange(syncAlbumBackground);
 
   const hasSavedAuth = Boolean(
     dom.serverUrlInput.value && dom.apiKeyInput.value && dom.userIdInput.value
