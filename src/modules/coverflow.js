@@ -439,7 +439,7 @@ function updateCoverflow() {
     item.classList.toggle("is-flipping", isAlbumFlipLocked(albumId));
     const allowReflection =
       absOffset <= 3 &&
-      (!IS_SMALL_VIEWPORT || IS_IOS);
+      (!IS_SMALL_VIEWPORT || !IS_IOS);
     item.classList.toggle("with-reflection", allowReflection);
     item.style.zIndex = isOpen ? "200" : (100 - Math.abs(offset)).toString();
     const isHidden = absOffset > maxVisibleOffset;
