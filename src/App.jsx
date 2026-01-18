@@ -184,21 +184,8 @@ export default function App() {
 
       <footer className="player" id="playerFooter">
         <div className="player-left">
-          <div className="now-playing">
-            <div
-              className="now-cover"
-              id="nowCover"
-              role="button"
-              tabIndex={0}
-              aria-label="Jump to now playing album"
-            ></div>
-            <div className="now-info">
-              <div className="now-title" id="nowTitle">Nothing playing</div>
-              <div className="now-sub" id="nowSub">Connect to start listening</div>
-            </div>
-          </div>
-          <div className="player-controls-row">
-            <div className="now-actions">
+          <div className="player-bar">
+            <div className="player-actions">
               <div className="settings-menu" id="settingsMenuWrap">
                 <button
                   className="control-icon"
@@ -212,7 +199,12 @@ export default function App() {
                 >
                   <Settings className="icon" {...iconProps} />
                 </button>
-                <div className="settings-menu-popover" id="settingsMenu" role="menu" aria-hidden="true">
+                <div
+                  className="settings-menu-popover"
+                  id="settingsMenu"
+                  role="menu"
+                  aria-hidden="true"
+                >
                   <button
                     className="settings-menu-item"
                     id="openConnection"
@@ -271,6 +263,16 @@ export default function App() {
                 </div>
               </div>
               <button
+                className="control-icon shuffle-toggle"
+                id="shuffleBtn"
+                type="button"
+                aria-label="Shuffle album and track"
+                aria-pressed="false"
+                title="Shuffle album and track"
+              >
+                <Shuffle className="icon" {...iconProps} />
+              </button>
+              <button
                 className="control-icon"
                 id="prevTrackBtn"
                 type="button"
@@ -300,16 +302,6 @@ export default function App() {
                 <SkipForward className="icon" {...iconProps} />
               </button>
               <button
-                className="control-icon shuffle-toggle"
-                id="shuffleBtn"
-                type="button"
-                aria-label="Shuffle album and track"
-                aria-pressed="false"
-                title="Shuffle album and track"
-              >
-                <Shuffle className="icon" {...iconProps} />
-              </button>
-              <button
                 className="control-icon favorite-toggle"
                 id="favoriteToggle"
                 type="button"
@@ -331,19 +323,55 @@ export default function App() {
                 <ChevronDown className="icon" {...iconProps} />
               </button>
             </div>
-            <audio id="audio" controls preload="auto"></audio>
+            <div className="player-center">
+              <div className="now-playing">
+                <div
+                  className="now-cover"
+                  id="nowCover"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Jump to now playing album"
+                ></div>
+                <div className="now-info">
+                  <div className="now-title" id="nowTitle">Nothing playing</div>
+                  <div className="now-sub" id="nowSub">Connect to start listening</div>
+                </div>
+              </div>
+              <div className="audio-controls" id="audioControls">
+                <div className="audio-progress">
+                  <span className="audio-time" id="currentTime">
+                    0:00
+                  </span>
+                  <input
+                    className="audio-range seek-range"
+                    id="seekBar"
+                    type="range"
+                    min="0"
+                    max="0"
+                    step="0.1"
+                    defaultValue="0"
+                    aria-label="Seek"
+                  />
+                  <span className="audio-time" id="durationTime">
+                    --:--
+                  </span>
+                </div>
+                <audio id="audio" preload="auto"></audio>
+              </div>
+            </div>
+            <div className="player-settings" aria-hidden="true"></div>
           </div>
-          <div className="ad-slot" id="adSlot" aria-hidden="true"></div>
-          <div className="footer-controls" id="cornerControls">
-            <div
-              className="status"
-              id="status"
-              data-tone="idle"
-              role="button"
-              tabIndex={0}
-              aria-label="Open connection settings"
-            ></div>
-          </div>
+        </div>
+        <div className="ad-slot" id="adSlot" aria-hidden="true"></div>
+        <div className="footer-controls" id="cornerControls">
+          <div
+            className="status"
+            id="status"
+            data-tone="idle"
+            role="button"
+            tabIndex={0}
+            aria-label="Open connection settings"
+          ></div>
         </div>
         <button
           className="player-reveal"

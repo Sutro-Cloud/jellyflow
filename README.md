@@ -32,6 +32,46 @@ npm run build
 npm run preview
 ```
 
+## iOS (Capacitor)
+
+Requirements:
+- Xcode (latest stable)
+- CocoaPods (`sudo gem install cocoapods`)
+
+Build and run:
+
+```bash
+npm run build
+npx cap sync ios
+npx cap open ios
+```
+
+In Xcode, select your iPhone and press **Run**.
+
+Live reload (device on same network):
+
+```bash
+npm run dev
+npx cap run ios -l --external
+```
+
+Troubleshooting: Capgo media session SPM error
+
+If you see:
+
+```
+product 'CapgoCapacitorMediaSession' required by package 'capapp-spm' target 'CapApp-SPM' not found
+```
+
+Fix it after each `npx cap sync ios` (that command regenerates the file):
+
+```bash
+perl -0pi -e 's/CapgoCapacitorMediaSession/CapgoMediaSession/g' ios/App/CapApp-SPM/Package.swift
+xcodebuild -resolvePackageDependencies
+```
+
+Then open `ios/App/App.xcworkspace` in Xcode and build again.
+
 ## Docker image (GitHub Container Registry)
 
 Build and publish the image to GHCR so you can reference it from `docker-compose.yml`.

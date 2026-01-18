@@ -533,6 +533,150 @@ function setupEvents() {
     dom.playPauseBtn.setAttribute("aria-label", label);
     dom.playPauseBtn.title = label;
   };
+  let isSeeking = false;
+  const formatAudioTime = (value) => {
+    if (!Number.isFinite(value) || value < 0) {
+      return "--:--";
+    }
+    const totalSeconds = Math.floor(value);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+    }
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+  const setRangeFill = (rangeEl, percent) => {
+    if (!rangeEl || !Number.isFinite(percent)) {
+      return;
+    }
+    const clamped = Math.min(100, Math.max(0, percent));
+    rangeEl.style.setProperty("--range-fill", `${clamped}%`);
+  };
+  const updateAudioProgress = (force = false) => {
+    if (!dom.audio || !dom.seekBar || !dom.currentTime || !dom.durationTime) {
+      return;
+    }
+    if (isSeeking && !force) {
+      return;
+    }
+    const duration =
+      Number.isFinite(dom.audio.duration) && dom.audio.duration > 0 ? dom.audio.duration : null;
+    const current = Number.isFinite(dom.audio.currentTime) ? dom.audio.currentTime : 0;
+    const maxValue = duration || 1;
+    const clampedCurrent = duration ? Math.min(current, duration) : 0;
+    dom.seekBar.max = maxValue;
+    dom.seekBar.value = clampedCurrent;
+    dom.seekBar.disabled = !duration;
+    setRangeFill(dom.seekBar, duration ? (clampedCurrent / duration) * 100 : 0);
+    dom.currentTime.textContent = formatAudioTime(current);
+    dom.durationTime.textContent = formatAudioTime(duration);
+  };
+  const clampVolume = (value) => Math.min(1, Math.max(0, value));
+  const setVolume = (value) => {
+    if (!dom.audio) {
+      return;
+    }
+    const clamped = clampVolume(value);
+    dom.audio.volume = clamped;
+    dom.audio.muted = clamped === 0;
+    updateVolumeUI();
+  };
+  const setVolumePopoverOpen = (isOpen) => {
+    if (!dom.volumeWrap || !dom.volumeToggle || !dom.volumePopover) {
+      return;
+    }
+    dom.volumeWrap.classList.toggle("is-open", isOpen);
+    dom.volumeToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    dom.volumePopover.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  };
+  const isVolumePopoverOpen = () =>
+    dom.volumeWrap && dom.volumeWrap.classList.contains("is-open");
+  const updateVolumeUI = () => {
+    if (!dom.audio) {
+      return;
+    }
+    const volume = Number.isFinite(dom.audio.volume) ? dom.audio.volume : 1;
+    const isMuted = dom.audio.muted || volume === 0;
+    if (dom.volumeBar) {
+      dom.volumeBar.value = volume;
+      setRangeFill(dom.volumeBar, volume * 100);
+    }
+    if (dom.volumeToggle) {
+      dom.volumeToggle.classList.toggle("is-muted", isMuted);
+      const label = isMuted ? "Volume muted" : "Volume";
+      dom.volumeToggle.setAttribute("aria-label", label);
+      dom.volumeToggle.title = label;
+    }
+  };
+  if (dom.seekBar) {
+    dom.seekBar.addEventListener("input", (event) => {
+      if (!dom.audio) {
+        return;
+      }
+      const value = Number(event.target.value);
+      if (!Number.isFinite(value)) {
+        return;
+      }
+      isSeeking = true;
+      dom.audio.currentTime = value;
+      dom.currentTime.textContent = formatAudioTime(value);
+      const duration =
+        Number.isFinite(dom.audio.duration) && dom.audio.duration > 0 ? dom.audio.duration : null;
+      setRangeFill(dom.seekBar, duration ? (value / duration) * 100 : 0);
+    });
+    dom.seekBar.addEventListener("change", () => {
+      isSeeking = false;
+    });
+  }
+  const handleVolumeWheel = (event) => {
+    if (!dom.audio) {
+      return;
+    }
+    const delta = Number.isFinite(event.deltaY) ? event.deltaY : event.deltaX;
+    if (!Number.isFinite(delta) || delta === 0) {
+      return;
+    }
+    event.preventDefault();
+    const step = 0.05;
+    const current = dom.audio.muted ? 0 : dom.audio.volume;
+    const next = current + (delta > 0 ? -step : step);
+    setVolume(next);
+    setVolumePopoverOpen(true);
+  };
+  if (dom.volumeBar) {
+    dom.volumeBar.addEventListener("input", (event) => {
+      const value = Number(event.target.value);
+      if (!Number.isFinite(value)) {
+        return;
+      }
+      setVolume(value);
+    });
+    dom.volumeBar.addEventListener("wheel", handleVolumeWheel, { passive: false });
+  }
+  if (dom.volumePopover) {
+    dom.volumePopover.addEventListener("wheel", handleVolumeWheel, { passive: false });
+  }
+  if (dom.volumeToggle) {
+    dom.volumeToggle.addEventListener("click", () => {
+      setVolumePopoverOpen(!isVolumePopoverOpen());
+    });
+    dom.volumeToggle.addEventListener("wheel", handleVolumeWheel, { passive: false });
+  }
+  if (dom.volumeWrap) {
+    document.addEventListener("click", (event) => {
+      if (!isVolumePopoverOpen()) {
+        return;
+      }
+      if (dom.volumeWrap.contains(event.target)) {
+        return;
+      }
+      setVolumePopoverOpen(false);
+    });
+  }
   const setPlayerCollapsed = (isCollapsed) => {
     if (!dom.playerFooter) {
       return;
@@ -769,7 +913,13 @@ function setupEvents() {
       return;
     }
     const target = event.target;
-    if (target && target.closest && target.closest(".now-actions")) {
+    if (
+      target &&
+      target.closest &&
+      (target.closest(".player-actions") ||
+        target.closest(".player-center") ||
+        target.closest(".player-settings"))
+    ) {
       const isPrevNext = Boolean(target.closest("#prevTrackBtn, #nextTrackBtn"));
       if (!(state.shuffleMode && isPrevNext)) {
         return;
@@ -821,6 +971,11 @@ function setupEvents() {
       active === document.body ||
       active.classList.contains("coverflow-item") ||
       dom.coverflowTrack.contains(active);
+    if (event.key === "Escape" && isVolumePopoverOpen()) {
+      event.preventDefault();
+      setVolumePopoverOpen(false);
+      return;
+    }
     if (event.key === " " || event.key === "Spacebar") {
       if (!isEditable && !state.openAlbumId && isCoverflowFocus && state.typeaheadQuery) {
         // Let typeahead capture spaces inside a query.
@@ -959,15 +1114,31 @@ function setupEvents() {
   });
   dom.audio.addEventListener("ended", () => {
     void stepTrack(1);
+    updateAudioProgress(true);
+  });
+  dom.audio.addEventListener("loadstart", () => {
+    updateAudioProgress(true);
   });
   dom.audio.addEventListener("timeupdate", () => {
     syncLyrics();
     updateMediaSessionPosition();
+    updateAudioProgress();
   });
   dom.audio.addEventListener("loadedmetadata", () => {
     maybeEstimateLyrics(state.currentTrack);
     syncLyrics(true);
     updateMediaSessionPosition();
+    updateAudioProgress(true);
+    updateVolumeUI();
+  });
+  dom.audio.addEventListener("durationchange", () => {
+    updateAudioProgress(true);
+  });
+  dom.audio.addEventListener("seeked", () => {
+    updateAudioProgress(true);
+  });
+  dom.audio.addEventListener("volumechange", () => {
+    updateVolumeUI();
   });
   dom.audio.addEventListener("play", () => {
     setMediaSessionPlaybackState("playing");
@@ -998,6 +1169,8 @@ function setupEvents() {
   if (dom.audio) {
     document.body.classList.toggle("is-audio-paused", dom.audio.paused);
     setPlayPauseState(!dom.audio.paused);
+    updateAudioProgress(true);
+    updateVolumeUI();
   }
 }
 
